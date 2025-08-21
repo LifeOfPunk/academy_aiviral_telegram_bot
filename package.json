@@ -1,9 +1,9 @@
 {
-  "name": "ricks_bot",
+  "name": "aiviral_bot_academy",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npx nodemon --watch src --ext js --exec \"node ./src/bot_start.js\""
   },
   "keywords": [],
   "author": "",
