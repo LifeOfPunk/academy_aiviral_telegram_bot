@@ -10,9 +10,9 @@ export const chooseChainForPayScreenHandler = async (ctx, initialState, editMess
             let command;
 
             if (initialState.isGift) {
-                command = `pay_crypto_gift_${chainInfo.processing}_${initialState.month}`;
+                command = `pay_crypto_gift_${chainInfo.processing}_${initialState.tariff}`;
             } else {
-                command = `pay_crypto_${chainInfo.processing}_${initialState.month}`;
+                command = `pay_crypto_${chainInfo.processing}_${initialState.tariff}`;
             }
 
             return [

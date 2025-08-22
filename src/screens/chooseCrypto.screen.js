@@ -8,9 +8,9 @@ export const chooseCryptoForPayScreenHandler = async (ctx, initialState, editMes
             let command;
 
             if (initialState.isGift) {
-                command = `choose_chain_crypto_gift_${curr}_${initialState.month}`;
+                command = `choose_chain_crypto_gift_${curr}_${initialState.tariff}`;
             } else {
-                command = `choose_chain_crypto_${curr}_${initialState.month}`;
+                command = `choose_chain_crypto_${curr}_${initialState.tariff}`;
             }
 
             return [
@@ -20,9 +20,9 @@ export const chooseCryptoForPayScreenHandler = async (ctx, initialState, editMes
             let command;
 
             if (initialState.isGift) {
-                command = `pay_crypto_gift_${supportedCurrency[curr][0].processing}_${initialState.month}`;
+                command = `pay_crypto_gift_${supportedCurrency[curr][0].processing}_${initialState.tariff}`;
             } else {
-                command = `pay_crypto_${supportedCurrency[curr][0].processing}_${initialState.month}`;
+                command = `pay_crypto_${supportedCurrency[curr][0].processing}_${initialState.tariff}`;
             }
 
             return [

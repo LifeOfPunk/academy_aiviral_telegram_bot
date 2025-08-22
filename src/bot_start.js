@@ -5,10 +5,11 @@ import {callbackQuery} from "telegraf/filters";
 import {callbackQueryHandler} from "./controllers/callBack.handler.js";
 import {UserService} from "./services/User.service.js";
 import { URLSearchParams } from 'url';
-import {ERROR_PROMO_UNDEFINED, SUBSCRIPTION_GIFTED} from "./config.js";
+import {ERROR_PROMO_UNDEFINED} from "./config.js";
 import {PromoService} from "./services/Promo.service.js";
 import {OrderService} from "./services/Order.service.js";
 import {payByCardScene} from "./scenes/payByCard.scene.js";
+import {applyPlanForUser} from "./services/chatServices.js";
 
 if (process.env.BOT_TOKEN === undefined) {
     process.exit(1);
@@ -38,17 +39,10 @@ bot.start(async (ctx) => {
                 const validatedPromoObject = await new PromoService().validatePromoCode(promoCode);
 
                 if (validatedPromoObject.error === undefined) {
-                    const {invite_link} = await bot.telegram.createChatInviteLink(process.env.PRIVATE_CHANNEL_ID, {
-                        member_limit: 1,
-                    });
-
-                    const isSuccess = await new OrderService().setPromoSuccessAndGiveAccess(promoCode, userId, invite_link);
+                    const isSuccess = await new OrderService().setPromoSuccessAndGiveAccess(promoCode, userId);
 
                     if (isSuccess) {
-                        await ctx.telegram.sendMessage(ctx?.chat?.id, SUBSCRIPTION_GIFTED(invite_link), {
-                            parse_mode: "HTML",
-                            disable_web_page_preview: true,
-                        });
+                        await applyPlanForUser(userId, validatedPromoObject.tariff);
                     } else {
                         await ctx.telegram.sendMessage(ctx?.chat?.id, ERROR_PROMO_UNDEFINED, {
                             parse_mode: "HTML",

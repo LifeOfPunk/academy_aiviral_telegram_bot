@@ -15,7 +15,7 @@ export class CryptoPaymentApiService {
         this.merchant = '0xMR8252827';
     }
 
-    async createPayment({userId, amount, payCurrency, month}, isGift = false) {
+    async createPayment({userId, amount, payCurrency, tariff}, isGift = false) {
         try {
             const orderService = new OrderService();
 
@@ -60,7 +60,7 @@ export class CryptoPaymentApiService {
                     ? 1
                     : response.data.rate)
                 .toFixed(5);
-            data.month = month;
+            data.tariff = tariff;
             data.createdAt = new Date().toISOString();
 
             const coinInfoResponse = await axios.get(`${this.baseUrl}/Api/CoinInfo/${payCurrency}`);
@@ -78,7 +78,7 @@ export class CryptoPaymentApiService {
                 output: response.data,
                 isPayed: false,
                 isGift,
-                isRenew: user?.subscriptions?.mainChannel?.subscriptionStatus === 'active',
+                isRenew: user?.subscriptionStatus === 'active',
             }
 
             await orderService.addOrder(orderData);

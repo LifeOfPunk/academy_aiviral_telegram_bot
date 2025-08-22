@@ -28,7 +28,7 @@ export class PaymentFiatServiceClass {
         }
     }
 
-    async createNewOrder({userId, email, amount, bank, month}, isGift = false) {
+    async createNewOrder({userId, email, amount, bank, tariff}, isGift = false) {
         try {
             const orderService = new OrderService();
 
@@ -48,7 +48,7 @@ export class PaymentFiatServiceClass {
             // } else {
                 data = {
                     email,
-                    offerId: GLOBAL_CONFIG.prices.find(monthObj => monthObj.month === month)?.offerIdLavaGift,
+                    offerId: GLOBAL_CONFIG.tariffs[tariff]?.offerIdLavaGift,
                     buyerLanguage: "EN",
                     currency: this.currency[bank],
                 };
@@ -68,7 +68,7 @@ export class PaymentFiatServiceClass {
             if (response.data.error === undefined) {
                 data.amountUSD = amount;
                 data.amount = amount;
-                data.month = month;
+                data.tariff = tariff;
                 data.createdAt = new Date().toISOString();
 
                 const user = await new UserService().getUser(userId);
@@ -79,9 +79,10 @@ export class PaymentFiatServiceClass {
                     input: data,
                     output: response.data,
                     isPayed: false,
+                    tariff: tariff,
                     isGift,
                     isFiat: true,
-                    isRenew: user?.subscriptions?.mainChannel?.subscriptionStatus === 'active',
+                    isRenew: user?.subscriptionStatus === 'active',
                     parentId: response.data.id,
                 }
 

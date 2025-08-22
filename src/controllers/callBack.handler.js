@@ -239,31 +239,33 @@ export const callbackQueryHandler = async (
                 if (ctx.session.currentScreen) ctx.session.navStack.push(ctx.session.currentScreen);
                 ctx.session.currentScreen = 'pay_card_scene';
 
-                await ctx.scene.enter("payByCardScene", {month: 1, isGift: false});
+                const tariff = command.split('_')[2]; // start|pro|premium
+                await ctx.scene.enter("payByCardScene", { tariff, isGift: false });
             }
             if (command === "order_crypto_start" || command === "order_crypto_pro" || command === "order_crypto_premium") {
                 initNav();
-                ctx.session.chooseCryptoState = {month: 1, isGift: false};
+                const tariff = command.split('_')[2];
+                ctx.session.chooseCryptoState = { tariff, isGift: false };
                 await navigateTo('choose_crypto', async () => chooseCryptoForPayScreenHandler(ctx, ctx.session.chooseCryptoState, true));
             }
 
             if (command.includes("choose_chain_crypto_")) {
-                let monthAmount;
                 let isGift;
                 let symbol;
+                let tariff;
 
                 if (command.split("_")[3] === 'gift') {
                     symbol = command.split("_")[4];
-                    monthAmount = parseInt(command.split("_")[5]);
+                    tariff = command.split("_")[5];
                     isGift = true;
                 } else {
                     symbol = command.split("_")[3];
-                    monthAmount = parseInt(command.split("_")[4]);
+                    tariff = command.split("_")[4];
                     isGift = false;
                 }
 
                 initNav();
-                ctx.session.chooseChainState = {month: monthAmount, symbol, isGift};
+                ctx.session.chooseChainState = { symbol, tariff, isGift };
                 await navigateTo('choose_chain', async () => chooseChainForPayScreenHandler(ctx, ctx.session.chooseChainState, true));
             }
 
@@ -272,25 +274,28 @@ export const callbackQueryHandler = async (
             }
 
             if (command.includes("pay_crypto_")) {
-                let monthAmount;
                 let isGift;
                 let symbol;
+                let tariff;
 
                 if (command.split("_")[2] === 'gift') {
                     symbol = command.split("_")[3];
-                    monthAmount = parseInt(command.split("_")[4]);
+                    tariff = command.split("_")[4];
                     isGift = true;
                 } else {
                     symbol = command.split("_")[2];
-                    monthAmount = parseInt(command.split("_")[3]);
+                    tariff = command.split("_")[3];
                     isGift = false;
                 }
 
+                const t = GLOBAL_CONFIG.tariffs[tariff];
+                const amountUSDT = t?.usdt ?? 0;
+
                 const order = await new CryptoPaymentApiService().createPayment({
                     userId: ctx.from.id,
-                    amount: GLOBAL_CONFIG.prices.find(priceMonth => monthAmount === priceMonth.month).price,
+                    amount: amountUSDT,
                     payCurrency: symbol,
-                    month: monthAmount,
+                    tariff,
                 }, isGift);
 
                 console.log(order)
@@ -305,7 +310,7 @@ export const callbackQueryHandler = async (
                     if (ctx.session.currentScreen) ctx.session.navStack.push(ctx.session.currentScreen);
                     ctx.session.currentScreen = 'order_crypto_payment';
 
-                    const sentMessage = await orderCryptoPaymentScreenHandler(ctx, {order, month: monthAmount, isGift}, true);
+                    const sentMessage = await orderCryptoPaymentScreenHandler(ctx, {order, tariff, isGift}, true);
 
                     order.msgId = sentMessage.message_id;
 
@@ -320,28 +325,40 @@ export const callbackQueryHandler = async (
 
             // ********* CARD PAY **********
 
-            const regexCard = /^pay_(russian|world)_card(_gift)?_([0-9]+)$/;
+            const regexCard = /^pay_(russian|world)_card(_gift)?_(start|pro|premium)$/;
 
             if (command.match(regexCard)) {
                 console.log(ctx.scene.session.email)
-                let monthAmount;
                 let isGift;
                 const bankType = command.split("_")[1] === 'russian' ? 'BANK131' : 'UNLIMINT';
+                const tariff = command.split("_").pop();
 
-                if (command.split("_")[3] === 'gift') {
-                    monthAmount = parseInt(command.split("_")[4]);
-                    isGift = true;
-                } else {
-                    monthAmount = parseInt(command.split("_")[3]);
-                    isGift = false;
+                isGift = command.split("_")[3] === 'gift';
+
+                const t = GLOBAL_CONFIG.tariffs[tariff];
+                const amount = t?.usdt ?? 0;
+
+                if (amount === 0) {
+                    await ctx.telegram.editMessageText(
+                        ctx?.chat?.id,
+                        ctx?.callbackQuery?.message?.message_id,
+                        undefined,
+                        'Ошибка в получении суммы заказа Error: #clb351',
+                        {
+                            parse_mode: "HTML",
+                            disable_web_page_preview: true,
+                        }
+                    )
+
+                    await ctx.scene.leave();
                 }
 
                 const order = await new PaymentFiatServiceClass().createNewOrder({
                     userId: ctx.from.id,
                     email: ctx.scene.session.email,
-                    amount: GLOBAL_CONFIG.prices.find(priceMonth => monthAmount === priceMonth.month).price,
+                    amount,
                     bank: bankType,
-                    month: monthAmount,
+                    tariff,
                 }, isGift);
 
                 if (order?.error !== undefined) {
@@ -389,7 +406,7 @@ export const callbackQueryHandler = async (
                         ctx?.chat?.id,
                         ctx?.callbackQuery?.message?.message_id,
                         undefined,
-                        PAY_BY_CARD_GIVE_LINK(command.split("_")[1] === 'russian'),
+                        PAY_BY_CARD_GIVE_LINK(tariff, command.split("_")[1] === 'russian'),
                         {
                             parse_mode: "HTML",
                             disable_web_page_preview: true,

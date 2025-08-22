@@ -3,7 +3,7 @@ import {ERROR_PROMO_ALREADY_USED, ERROR_PROMO_NOT_FOUND} from "../config.js";
 
 
 export class PromoService {
-    async createPromoCode(userId, month){
+    async createPromoCode(userId, tariff){
 
         let promoCode = null;
 
@@ -22,8 +22,8 @@ export class PromoService {
             createdByUserId: userId,          // ID of the user who created the promo code
             usageLimit: 1,                         // Maximum number of times the promo code can be used
             timesUsed: 0,                          // Number of times the promo code has been used
-            month,
-            status: "active",                      // Status of the promo code (e.g., 'active', 'expired', 'used')
+            status: "active",
+            tariff,
             createdAt: new Date().toISOString(),     // Timestamp when the promo code was created
             usedAt: null,     // Timestamp when the promo code was created
             usedBy: []

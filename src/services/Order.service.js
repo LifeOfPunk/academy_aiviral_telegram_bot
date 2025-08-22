@@ -1,6 +1,5 @@
 import redis from "../redis.js";
 import {UserService} from "./User.service.js";
-import {addMonths} from "date-fns";
 import {PromoService} from "./Promo.service.js";
 
 export class OrderService {
@@ -64,7 +63,7 @@ export class OrderService {
         }
     }
 
-    async setOrderSuccessAndGiveAccess(orderId, linkForAccess) {
+    async setOrderSuccessAndGiveAccess(orderId) {
         try {
             const orderData = await this.getOrderById(orderId);
 
@@ -79,21 +78,12 @@ export class OrderService {
             const userData = await UserServiceInst.getUser(orderData.userId)
 
             if (userData !== null) {
-                userData.subscriptions.mainChannel = {
-                    subscriptionStatus: "active",
-                    expiresAt: userData.subscriptions.mainChannel.expiresAt
-                        ? addMonths(new Date(userData.subscriptions.mainChannel.expiresAt), orderData.input.month).toISOString()
-                        : addMonths(new Date(), orderData.input.month).toISOString(),
-                    subPrice: orderData.input.amountUSD,
-                    isUserWasSubscribed: true,
-                    isFiat: orderData.isFiat
-                };
-
+                userData.subscriptionStatus = "active";
+                userData.subPrice = orderData.input.amountUSD;
+                userData.isUserWasSubscribed = true;
+                userData.isFiat = orderData.isFiat
+                userData.tariff = orderData.input.tariff;
                 userData.updatedAt = new Date().toISOString();
-
-                userData.subscriptions.mainChannel.linksHistory = userData.subscriptions.mainChannel.linksHistory === undefined ?
-                    [linkForAccess] :
-                    [...userData.subscriptions.mainChannel.linksHistory, linkForAccess];
 
                 await UserServiceInst.updateUser(orderData.userId, userData);
                 await UserServiceInst.addUserToSubscribed(orderData.userId);
@@ -127,23 +117,14 @@ export class OrderService {
             const userData = await UserServiceInst.getUser(orderData.userId)
 
             if (userData !== null) {
-                userData.subscriptions.mainChannel = {
-                    ...userData.subscriptions.mainChannel,
-                    expiresAt: userData.subscriptions.mainChannel.expiresAt
-                        ? addMonths(new Date(userData.subscriptions.mainChannel.expiresAt), orderData.input.month).toISOString()
-                        : addMonths(new Date(), orderData.input.month).toISOString(),
+                const newUserData = {
+                    ...userData,
                     subPrice: orderData.input.amountUSD,
                     isFiat: orderData.isFiat,
-                    reminders: {
-                        threeDays: false,
-                        oneDay: false,
-                        sixHours: false,
-                    }
-                };
+                    updatedAt: new Date().toISOString()
+                }
 
-                userData.updatedAt = new Date().toISOString();
-
-                await UserServiceInst.updateUser(orderData.userId, userData);
+                await UserServiceInst.updateUser(orderData.userId, newUserData);
                 await UserServiceInst.addUserToSubscribed(orderData.userId);
 
                 console.log(`User ${orderData.userId} updated successfully.`);
@@ -160,7 +141,7 @@ export class OrderService {
         }
     }
 
-    async setPromoSuccessAndGiveAccess(promoCode, userId, linkForAccess) {
+    async setPromoSuccessAndGiveAccess(promoCode, userId) {
         try {
             const promoObject = await new PromoService().getPromoObject(promoCode);
 
@@ -179,28 +160,16 @@ export class OrderService {
             const userData = await UserServiceInst.getUser(userId);
 
             if (userData !== null) {
-                userData.subscriptions.mainChannel = {
+                const newUser = {
+                    ...userData,
                     subscriptionStatus: "active",
-                    expiresAt: userData.subscriptions.mainChannel.expiresAt
-                        ? addMonths(new Date(userData.subscriptions.mainChannel.expiresAt), promoObject.month).toISOString()
-                        : addMonths(new Date(), promoObject.month).toISOString(),
                     subPrice: promoObject.amountUSD,
                     isUserWasSubscribed: true,
                     isFiat: false,
-                    reminders: {
-                        threeDays: false,
-                        oneDay: false,
-                        sixHours: false,
-                    }
-                };
+                    updatedAt: new Date().toISOString()
+                }
 
-                userData.updatedAt = new Date().toISOString();
-
-                userData.subscriptions.mainChannel.linksHistory = userData.subscriptions.mainChannel.linksHistory === undefined ?
-                    [linkForAccess] :
-                    [...userData.subscriptions.mainChannel.linksHistory, linkForAccess];
-
-                await UserServiceInst.updateUser(userId, userData);
+                await UserServiceInst.updateUser(userId, newUser);
                 await UserServiceInst.addUserToSubscribed(userId);
 
                 console.log(`User ${userId} updated successfully.`);

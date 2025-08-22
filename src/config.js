@@ -8,21 +8,13 @@ export const GLOBAL_CONFIG = {
             emoji: '⚡',
             offerIdLavaGift: '70ff8d50-627f-4465-9e6d-020aad67c08a'
         },
-        // {
-        //     month: 6,
-        //     price: 90,
-        //     text: 'месяцев',
-        //     emoji: '⚡⚡',
-        //     offerIdLavaGift: '4709ef0e-0392-4f1d-8d66-66675d9903a8'
-        // },
-        // {
-        //     month: 12,
-        //     price: 180,
-        //     text: 'месяцев',
-        //     emoji: '⚡⚡⚡⚡',
-        //     offerIdLavaGift: '40e96f71-a07a-4cb9-be33-0851d2b566cd'
-        // },
     ],
+
+    tariffs: {
+        start: { title: 'Start', usdt: 49, rub: 4250, offerIdLavaGift: '70ff8d50-627f-4465-9e6d-020aad67c08a' },
+        pro: { title: 'Pro', usdt: 149, rub: 12930, offerIdLavaGift: '' },
+        premium: { title: 'Premium', usdt: 249, rub: 21599, offerIdLavaGift: '' },
+    },
     admins: [470239748, 892965815],
     supportedCrypto: {
         // BTC: [
@@ -130,14 +122,6 @@ export const PAY_ORDER_CRYPTO = (amount, currency, chain, address, destinationTa
     }
 };
 
-export const SUCCESS_PAYMENT_AND_ACCESS = (link) => {
-    return `Оплата прошла успешно!
-
-Ваша ссылка-приглашение:
-${link}
-    `
-}
-
 export const SUCCESS_RENEW = `Оплата прошла успешно!
 Ваша подписка продлена
 `
@@ -156,21 +140,20 @@ export const ERROR_PROMO_ALREADY_USED = `Промо-код уже использ
 export const ERROR_PROMO_NOT_FOUND = `Промо-код не найден!`;
 export const ERROR_PROMO_UNDEFINED = `Ошибка использования промо-кода. Пожалуйста, обратитесь в службу поддержки. Ошибка: -12`;
 
-
-export const NOTIFICATION_3_DAYS_UNTIL_EXPIRE = 'Ваша подписка истечёт через 3 дня. Продлите её, чтобы сохранить доступ.';
-export const NOTIFICATION_1_DAYS_UNTIL_EXPIRE = 'Ваша подписка истечёт через 1 день. Поспешите и продлите её!';
-export const NOTIFICATION_6_HOURS_UNTIL_EXPIRE = `Ваша подписка истечёт через 6 часов. Не упустите возможность продлить!`;
-export const NOTIFICATION_EXPIRE = 'Срок вашей подписки истёк. Продлите её, чтобы восстановить доступ.';
-
 export const PAY_BY_CARD_ASK_EMAIL = 'Пожалуйста, отправьте ваш НАСТОЯЩИЙ email:';
 export const PAY_BY_CARD_ASK_CARD = 'Какой картой вы хотите оплатить?';
 
-export const PAY_BY_CARD_GIVE_LINK = (isRussianCard= true) => `Сумма к оплате:
-🤝Start: 49$ (4 250₽)
+export const PAY_BY_CARD_GIVE_LINK = (tariffKey, isRussianCard = true) => {
+    const t = GLOBAL_CONFIG.tariffs[tariffKey];
+    const title = t?.title ?? 'Start';
+
+    return `Сумма к оплате:
+${title}: ${t?.rub}₽
 Проводя оплату вы соглашаетесь с договором-оферта и политикой конфиденциальности
 
 *У вас есть ${isRussianCard ? '1 час' : '15 минут'} для завершения оплаты! Иначе заказ будет отменён.
 `;
+};
 
 export const PAY_BY_CARD_ERROR_EMAIL_NOT_CORRECT = '❌ Некорректный email. Пожалуйста, попробуйте снова';
 

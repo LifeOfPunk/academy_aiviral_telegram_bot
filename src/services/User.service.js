@@ -1,6 +1,9 @@
 import redis from "../redis.js";
-import {OrderService} from "./Order.service.js";
-import {PaymentFiatServiceClass} from "./PaymentFiat.service.js";
+import {setPermissions} from "./chatServices.js";
+import 'dotenv/config';
+
+const MAIN_CHAT_ID = process.env.PRIVATE_CHANNEL_ID;
+const PREMIUM_CHAT_ID = process.env.PREMIUM_CHAT_ID;
 
 export class UserService {
     async createNewUser(telegramUser) {
@@ -14,21 +17,12 @@ export class UserService {
                 username: username || null,
                 firstName: firstName || null,
                 lastName: lastName || null,
-                subscriptions: {
-                    mainChannel: {
-                        subscriptionStatus: "inactive",
-                        expiresAt: null,
-                        subPrice: null,
-                        isUserWasSubscribed: false,
-                        linksHistory: [],
-                        reminders: {
-                            threeDays: false,
-                            oneDay: false,
-                            sixHours: false,
-                        }
-                    },
-                    additionalChannels: []
-                },
+                tariff: null,
+                permissionsSynced: false,
+                subscriptionStatus: "inactive",
+                subPrice: null,
+                isUserWasSubscribed: false,
+                isFiat: false,
                 notifications: {
                     renewalReminder: true,
                     paymentReminder: true
@@ -112,24 +106,42 @@ export class UserService {
         return userId ? userId : null;
     }
 
-    async cancelUserRenew(userId) {
-        const userObj = await this.getUser(userId);
+    async syncPermissionsForAllUsers() {
+        try {
+            const userIds = await redis.smembers('active_users');
+            if (!Array.isArray(userIds) || userIds.length === 0) return;
 
-        if (userObj !== null) {
-            const orderId = await new OrderService().getOrderByEmail(userObj.email);
+            for (const userId of userIds) {
+                try {
+                    const user = await this.getUser(userId);
+                    if (!user) continue;
 
-            if (orderId !== null) {
-                userObj.subscriptions.mainChannel.isFiat = false;
-                userObj.updatedAt = new Date().toISOString();
+                    if (user.permissionsSynced === true) {
+                        continue;
+                    }
 
-                const isSuccess = new PaymentFiatServiceClass().cancelUserSubscription(userObj.email, orderId.parentId);
+                    let isSuccess = false;
 
-                if (isSuccess) {
-                    await this.updateUser(userId, userObj);
+                    if (user.tariff !== 'premium') {
+                        isSuccess = await setPermissions(MAIN_CHAT_ID, Number(userId), user.tariff);
+                    } else {
+                        const isSuccessDef = await setPermissions(MAIN_CHAT_ID, Number(userId), user.tariff);
+                        const isSuccessPrem = await setPermissions(PREMIUM_CHAT_ID, Number(userId), user.tariff);
+
+                        isSuccess = isSuccessDef && isSuccessPrem;
+                    }
+
+                    if (isSuccess) {
+                        user.permissionsSynced = true;
+                        user.updatedAt = new Date().toISOString();
+                        await this.updateUser(userId, user);
+                    }
+                } catch (innerErr) {
+                    console.warn(`syncPermissions: user ${userId} error`, innerErr?.message || innerErr);
                 }
-
-                return isSuccess;
             }
+        } catch (err) {
+            console.error("syncPermissionsForAllUsers error", err?.message || err);
         }
     }
 }

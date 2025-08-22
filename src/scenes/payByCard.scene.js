@@ -84,9 +84,9 @@ payByCardScene.on(message('text'), async (ctx) => {
 
                         
                         if (initialState.isGift) {
-                            command = `${item.command}_gift_${initialState.month}`;
+                            command = `${item.command}_gift_${initialState.tariff}`;
                         } else {
-                            command = `${item.command}_${initialState.month}`;
+                            command = `${item.command}_${initialState.tariff}`;
                         }
 
                         return {
@@ -107,14 +107,7 @@ payByCardScene.on(message('text'), async (ctx) => {
             const reply_markup = {
                 inline_keyboard: backButton.map((rowItem) =>
                     rowItem.map((item) => {
-                        let command;
-
-                        if (initialState.isGift) {
-                            command = `${item.command}_gift_${initialState.month}`;
-                        } else {
-                            command = `${item.command}_${initialState.month}`;
-                        }
-
+                        const command = item.command;
                         return {
                             text: item.text,
                             callback_data: JSON.stringify({

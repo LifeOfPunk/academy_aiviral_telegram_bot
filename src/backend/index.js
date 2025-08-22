@@ -7,21 +7,21 @@ import * as https from "node:https";
 import * as fs from "node:fs";
 import bot from "../bot_start.js";
 import {
-    BACK_BUTTON_TO_WELCOME,
+    BACK_BUTTON_TO_WELCOME, ERROR_INSUFFICIENT_AMOUNT, ERROR_PAYMENT_CANCELLED, ERROR_TEST_OR_PAYMENT_ERROR,
     ERROR_UNDEFINED_PAYMENT,
     PAYMENT_SUCCESSFUL_GIFT,
-    SUCCESS_PAYMENT_AND_ACCESS, SUCCESS_RENEW,
+    SUCCESS_RENEW,
 } from "../config.js";
-//import {checkSubscriptions} from "./checkSubscribtion.js";
 import {PromoService} from "../services/Promo.service.js";
 import {PaymentFiatServiceClass} from "../services/PaymentFiat.service.js";
 import winston from "winston";
+import {applyPlanForUser} from "../services/chatServices.js";
 
 const app = express();
 app.use(bodyParser.json());
 
+const WEBHOOK_USERNAME = process.env.WEBHOOK_USERNAME;
 const WEBHOOK_PASSWORD = process.env.WEBHOOK_PASSWORD_PROCESSING;
-const channelId = process.env.PRIVATE_CHANNEL_ID;
 const BOT_NAME = process.env.BOT_NAME;
 
 const orderService = new OrderService();
@@ -59,10 +59,9 @@ const basicAuthMiddleware = (req, res, next) => {
     const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
     const [username, password] = credentials.split(':');
 
-    // Проверяем логин и пароль из .env
     if (
-        username !== process.env.WEBHOOK_USERNAME ||
-        password !== process.env.WEBHOOK_PASSWORD
+        username !== WEBHOOK_USERNAME ||
+        password !== WEBHOOK_PASSWORD
     ) {
         return res.status(401).send('Invalid username or password');
     }
@@ -70,7 +69,114 @@ const basicAuthMiddleware = (req, res, next) => {
     next();
 };
 
+app.post('/crypto_payment', async (req, res) => {
+    try {
+        const data = req.body;
+        const receivedSignature = data.Signature;
 
+        if (!verifySignature(data, receivedSignature)) {
+            console.error('Invalid signature');
+            return res.status(400).json({error: 'Invalid signature'});
+        }
+
+        const {PaymentId, Status, Insufficient, BillingID, TotalAmountUSD, Test} = data;
+        console.log(`Received payment update for PaymentId: ${PaymentId}`);
+
+        const order = await orderService.getOrderById(BillingID);
+
+        if (!order) {
+            console.error(`Order with BillingID ${BillingID} not found.`);
+            return res.status(404).json({error: 'Order not found'});
+        }
+
+        const { userId, tariff } = order;
+
+        if (Status === 'Success') {
+            if (order.output.id === PaymentId && !Test) {
+                //if (order.output.id === PaymentId) {
+                if (order.webhook === undefined) {
+                    order.webhook = [data];
+                } else {
+                    order.webhook.push(data);
+                }
+
+                const expectedAmount = order.input.amountUSD;
+                console.log(expectedAmount + ' amount in order')
+                const slippageAllowed = expectedAmount * 0.03; // 3% slippage
+                const minAcceptableAmount = expectedAmount - slippageAllowed;
+
+                if (TotalAmountUSD >= minAcceptableAmount) {
+                    if (!order.isGift) {
+                        if (!order.isRenew) {
+                            console.log('Payment processed successfully and amount verified with slippage tolerance.');
+
+                            const isSuccess = await orderService.setOrderSuccessAndGiveAccess(BillingID);
+
+                            if (isSuccess) {
+                                await applyPlanForUser(userId, tariff);
+
+                                if (order.msgId !== undefined) {
+                                    await bot.telegram.deleteMessage(userId, order.msgId);
+                                }
+                            } else {
+                                console.log('Payment successful but something wrong');
+                                await bot.telegram.sendMessage(userId, ERROR_UNDEFINED_PAYMENT);
+                            }
+                        } else {
+                            const isSuccess = await orderService.renewSubscription(order.orderId);
+                            if (isSuccess) {
+                                await bot.telegram.sendMessage(userId, SUCCESS_RENEW, {
+                                    parse_mode: "HTML",
+                                    disable_web_page_preview: true,
+                                    reply_markup: BACK_BUTTON_TO_WELCOME,
+                                });
+
+                                if (order.msgId !== undefined) {
+                                    await bot.telegram.deleteMessage(userId, order.msgId);
+                                }
+                            } else {
+                                console.error('Failed to update order status after successful payment.');
+                                await bot.telegram.sendMessage(userId, ERROR_UNDEFINED_PAYMENT);
+                            }
+                        }
+                    } else {
+                        const newPromo = await new PromoService().createPromoCode(userId, tariff);
+
+                        await bot.telegram.sendMessage(userId, PAYMENT_SUCCESSFUL_GIFT(`https://t.me/${BOT_NAME}?promo=${newPromo.promoCode}`), {
+                            parse_mode: "HTML",
+                            disable_web_page_preview: true,
+                            reply_markup: BACK_BUTTON_TO_WELCOME,
+                        });
+                    }
+                } else {
+                    console.error(`Received amount ${TotalAmountUSD} is less than acceptable amount ${minAcceptableAmount}.`);
+                    await bot.telegram.sendMessage(userId, ERROR_INSUFFICIENT_AMOUNT);
+                }
+            } else {
+                await bot.telegram.sendMessage(userId, ERROR_TEST_OR_PAYMENT_ERROR);
+                console.log('PaymentID DONT MATCH WITH DATA IN DATABASE OR TEST IS SET');
+            }
+        } else if (Status === 'Canceled') {
+            console.log('Payment was canceled.');
+            await bot.telegram.sendMessage(userId, ERROR_PAYMENT_CANCELLED);
+
+            if (order.msgId !== undefined) {
+                await bot.telegram.deleteMessage(userId, order.msgId);
+            }
+        } else if (Status === 'Insufficient') {
+            console.log('Payment is insufficient.');
+            if (Insufficient) {
+                console.log('Underpaid amount confirmed as successful.');
+                await bot.telegram.sendMessage(userId, ERROR_INSUFFICIENT_AMOUNT);
+            }
+        }
+
+        res.status(200).json({message: 'Webhook received successfully'});
+    } catch (error) {
+        logger.error('Error processing payment: ', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
 app.post('/fiat_subscription', basicAuthMiddleware, async (req, res) => {
     try {
@@ -79,7 +185,6 @@ app.post('/fiat_subscription', basicAuthMiddleware, async (req, res) => {
 
         console.log('Received Lava Webhook:', JSON.stringify(data, null, 2));
 
-        // Проверяем статус платежа
         const {buyer, status, errorMessage, contractId} = data;
 
         let order;
@@ -92,7 +197,7 @@ app.post('/fiat_subscription', basicAuthMiddleware, async (req, res) => {
             order = await orderService.getOrderByEmail(buyer.email);
         }
 
-        const userId = order.userId;
+        const {userId, tariff} = order;
 
         if (!order) {
             console.error(`Order with contractId ${contractId} not found.`);
@@ -115,17 +220,9 @@ app.post('/fiat_subscription', basicAuthMiddleware, async (req, res) => {
 
                 if (!order.isGift) {
                     if (!order.isRenew) {
-                        const {invite_link} = await bot.telegram.createChatInviteLink(process.env.PRIVATE_CHANNEL_ID, {
-                            member_limit: 1,
-                        });
-
-                        const isSuccess = await orderService.setOrderSuccessAndGiveAccess(order.orderId, invite_link);
+                        const isSuccess = await orderService.setOrderSuccessAndGiveAccess(order.orderId);
                         if (isSuccess) {
-                            await bot.telegram.sendMessage(userId, SUCCESS_PAYMENT_AND_ACCESS(invite_link), {
-                                parse_mode: "HTML",
-                                disable_web_page_preview: true,
-                                reply_markup: BACK_BUTTON_TO_WELCOME,
-                            });
+                            await applyPlanForUser(userId, tariff);
 
                             if (order.msgId !== undefined) {
                                 await bot.telegram.deleteMessage(userId, order.msgId);
@@ -148,7 +245,7 @@ app.post('/fiat_subscription', basicAuthMiddleware, async (req, res) => {
                         }
                     }
                 } else {
-                    const newPromo = await new PromoService().createPromoCode(userId, order.input.month);
+                    const newPromo = await new PromoService().createPromoCode(userId, tariff);
 
                     await bot.telegram.sendMessage(userId, PAYMENT_SUCCESSFUL_GIFT(`https://t.me/${BOT_NAME}?promo=${newPromo.promoCode}`), {
                         parse_mode: "HTML",
