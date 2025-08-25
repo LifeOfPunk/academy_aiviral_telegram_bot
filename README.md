@@ -19,7 +19,7 @@
    - положите файлы сертификатов в папку `env_data`: `./env_data/privkey.pem` и `./env_data/fullchain.pem`.
 5) (Опционально для платежей) Аккаунты и ключи в:
    - Crypto‑платежи: 0xprocessing (PAYMENT_API — ключ/токен, если требуется);
-   - Фиат‑платежи: Lava (LAVA_PAYMENT_API, LAVA_OFFER_ID, настройки вебхуков).
+   - Фиат‑платежи: Lava (LAVA_PAYMENT_API, настройки вебхуков).
 
 ---
 
@@ -55,7 +55,6 @@ PAYMENT_API=your_0xprocessing_api_key_or_token
 
 # Фиат‑платежи (Lava)
 LAVA_PAYMENT_API=your_lava_api_key
-LAVA_OFFER_ID=your_lava_offer_id
 
 # Базовая авторизация для вебхука (фиат)
 WEBHOOK_USERNAME=webhook_user

@@ -362,10 +362,8 @@ export const callbackQueryHandler = async (
                 }, isGift);
 
                 if (order?.error !== undefined) {
-                    await ctx.telegram.editMessageText(
+                    await ctx.telegram.sendMessage(
                         ctx?.chat?.id,
-                        ctx?.callbackQuery?.message?.message_id,
-                        undefined,
                         order.error,
                         {
                             parse_mode: "HTML",

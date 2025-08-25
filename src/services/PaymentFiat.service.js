@@ -8,14 +8,12 @@ import {UserService} from "./User.service.js";
 export class PaymentFiatServiceClass {
     baseUrl;
     api;
-    offerId;
     currency;
     periodicity;
 
     constructor() {
         this.baseUrl = 'https://gate.lava.top';
         this.api = process.env.LAVA_PAYMENT_API;
-        this.offerId = process.env.LAVA_OFFER_ID;
         this.currency = {
             'BANK131': 'RUB',
             'UNLIMINT': 'USD'
@@ -92,8 +90,9 @@ export class PaymentFiatServiceClass {
                 return {error: response.data.error};
             }
         } catch (err) {
-            console.log(`Error with creating payment ${err.message}`);
-            console.log(err)
+            console.log(JSON.stringify(err));
+            // console.log(`Error with creating payment ${err.message}`);
+            // console.log(err)
 
             return {error: err.toString()};
         }

@@ -1,19 +1,9 @@
 
 export const GLOBAL_CONFIG = {
-    prices: [
-        {
-            month: 1,
-            price: 15,
-            text: 'месяц',
-            emoji: '⚡',
-            offerIdLavaGift: '70ff8d50-627f-4465-9e6d-020aad67c08a'
-        },
-    ],
-
     tariffs: {
-        start: { title: 'Start', usdt: 49, rub: 4250, offerIdLavaGift: '70ff8d50-627f-4465-9e6d-020aad67c08a' },
-        pro: { title: 'Pro', usdt: 149, rub: 12930, offerIdLavaGift: '' },
-        premium: { title: 'Premium', usdt: 249, rub: 21599, offerIdLavaGift: '' },
+        start: { title: 'Start', usdt: 3, rub: 50, offerIdLavaGift: '8d9bbf4d-ed9e-4836-91d9-122c79da3adc' },
+        pro: { title: 'Pro', usdt: 4, rub: 52, offerIdLavaGift: '61001e64-621b-4354-bbe6-3d809c12ac97' },
+        premium: { title: 'Premium', usdt: 5, rub: 55, offerIdLavaGift: 'c7186167-2423-46de-81ba-de1c4830563d' },
     },
     admins: [470239748, 892965815],
     supportedCrypto: {
