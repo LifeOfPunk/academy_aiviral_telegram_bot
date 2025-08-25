@@ -3,8 +3,7 @@ import bodyParser from "body-parser";
 import crypto from "crypto";
 import {OrderService} from "../services/Order.service.js";
 import 'dotenv/config';
-import * as https from "node:https";
-import * as fs from "node:fs";
+import * as http from "node:http";
 import bot from "../bot_start.js";
 import {
     BACK_BUTTON_TO_WELCOME, ERROR_INSUFFICIENT_AMOUNT, ERROR_PAYMENT_CANCELLED, ERROR_TEST_OR_PAYMENT_ERROR,
@@ -287,15 +286,10 @@ app.get('/health', (req, res) => {
     });
 });
 
-const sslOptions = {
-    key: fs.readFileSync('./env_data/privkey.pem'),
-    cert: fs.readFileSync('./env_data/fullchain.pem')
-};
-
 const PORT = 3000;
 
 //setInterval(async () => await checkSubscriptions(bot), 60 * 1000);
-https.createServer(sslOptions, app).listen(PORT, () => {
+http.createServer(app).listen(PORT, () => {
     console.log(`Secure webhook server listening on port ${PORT}`);
 });
 
