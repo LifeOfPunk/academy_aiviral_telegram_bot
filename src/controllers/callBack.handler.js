@@ -20,6 +20,7 @@ import {aviralMoreScreen} from "../screens/aviralMore.screen.js";
 import {portfolioScreen} from "../screens/portfolio.screen.js";
 import {contactsScreen} from "../screens/contacts.screen.js";
 import {orderCryptoPaymentScreenHandler} from "../screens/orderCryptoPayment.screen.js";
+import {UserService} from "../services/User.service.js";
 
 export const callbackQueryHandler = async (
     ctx
@@ -291,30 +292,39 @@ export const callbackQueryHandler = async (
                 const t = GLOBAL_CONFIG.tariffs[tariff];
                 const amountUSDT = t?.usdt ?? 0;
 
-                const order = await new CryptoPaymentApiService().createPayment({
-                    userId: ctx.from.id,
-                    amount: amountUSDT,
-                    payCurrency: symbol,
-                    tariff,
-                }, isGift);
+                const user = await new UserService().getUser(ctx.from.id);
 
-                console.log(order)
-
-                if (order?.error !== undefined) {
-                    await ctx.telegram.sendMessage(ctx?.chat?.id, order.error, {
+                if (user.subscriptionStatus === 'active') {
+                    await ctx.telegram.sendMessage(ctx?.chat?.id, `У вас уже есть подписка`, {
                         parse_mode: "HTML",
                         disable_web_page_preview: true,
                     });
                 } else {
-                    initNav();
-                    if (ctx.session.currentScreen) ctx.session.navStack.push(ctx.session.currentScreen);
-                    ctx.session.currentScreen = 'order_crypto_payment';
+                    const order = await new CryptoPaymentApiService().createPayment({
+                        userId: ctx.from.id,
+                        amount: amountUSDT,
+                        payCurrency: symbol,
+                        tariff,
+                    }, isGift);
 
-                    const sentMessage = await orderCryptoPaymentScreenHandler(ctx, {order, tariff, isGift}, true);
+                    console.log(order)
 
-                    order.msgId = sentMessage.message_id;
+                    if (order?.error !== undefined) {
+                        await ctx.telegram.sendMessage(ctx?.chat?.id, order.error, {
+                            parse_mode: "HTML",
+                            disable_web_page_preview: true,
+                        });
+                    } else {
+                        initNav();
+                        if (ctx.session.currentScreen) ctx.session.navStack.push(ctx.session.currentScreen);
+                        ctx.session.currentScreen = 'order_crypto_payment';
 
-                    await new OrderService().updateOrder(order.orderId, order);
+                        const sentMessage = await orderCryptoPaymentScreenHandler(ctx, {order, tariff, isGift}, true);
+
+                        order.msgId = sentMessage.message_id;
+
+                        await new OrderService().updateOrder(order.orderId, order);
+                    }
                 }
             }
 
@@ -353,70 +363,80 @@ export const callbackQueryHandler = async (
                     await ctx.scene.leave();
                 }
 
-                const order = await new PaymentFiatServiceClass().createNewOrder({
-                    userId: ctx.from.id,
-                    email: ctx.scene.session.email,
-                    amount,
-                    bank: bankType,
-                    tariff,
-                }, isGift);
+                const user = await new UserService().getUser(ctx.from.id);
 
-                if (order?.error !== undefined) {
-                    await ctx.telegram.sendMessage(
-                        ctx?.chat?.id,
-                        order.error,
-                        {
-                            parse_mode: "HTML",
-                            disable_web_page_preview: true,
-                        }
-                    )
-
-                    await ctx.scene.leave();
+                if (user.subscriptionStatus === 'active') {
+                    await ctx.telegram.sendMessage(ctx?.chat?.id, `У вас уже есть подписка`, {
+                        parse_mode: "HTML",
+                        disable_web_page_preview: true,
+                    });
                 } else {
-                    const buttonsWithLink = [
-                        [{ text: "✅ Оплатить", command: "payment_link" }],
-                        [{ text: "📝 Договор-оферта", command: "send_file_offer_agreement" }],
-                        [{ text: "📝 Политика конфиденциальности", command: "send_file_personal_policy" }],
-                        [{ text: '❓ Задать вопрос', command: 'ask_question' }],
-                        [{ text: "⏪ Вернуться назад", command: 'back' }],
-                    ];
 
-                    const reply_markup = {
-                        inline_keyboard: buttonsWithLink.map((row) =>
-                            row.map((item) => {
-                                if (item.command === 'ask_question') {
-                                    return { text: item.text, url: `https://t.me/${process.env.SUPPORT_USERNAME}` };
-                                }
+                    const order = await new PaymentFiatServiceClass().createNewOrder({
+                        userId: ctx.from.id,
+                        email: ctx.scene.session.email,
+                        amount,
+                        bank: bankType,
+                        tariff,
+                    }, isGift);
 
-                                if (item.command === 'payment_link') {
-                                    return { text: item.text, url: order.output.paymentUrl };
-                                }
+                    if (order?.error !== undefined) {
+                        await ctx.telegram.sendMessage(
+                            ctx?.chat?.id,
+                            order.error,
+                            {
+                                parse_mode: "HTML",
+                                disable_web_page_preview: true,
+                            }
+                        )
 
-                                return {
-                                    text: item.text,
-                                    callback_data: JSON.stringify({ command: item.command }),
-                                };
-                            })
-                        ),
-                    };
+                        await ctx.scene.leave();
+                    } else {
+                        const buttonsWithLink = [
+                            [{text: "✅ Оплатить", command: "payment_link"}],
+                            [{text: "📝 Договор-оферта", command: "send_file_offer_agreement"}],
+                            [{text: "📝 Политика конфиденциальности", command: "send_file_personal_policy"}],
+                            [{text: '❓ Задать вопрос', command: 'ask_question'}],
+                            [{text: "⏪ Вернуться назад", command: 'back'}],
+                        ];
 
-                    const sentMessage = await ctx.telegram.editMessageText(
-                        ctx?.chat?.id,
-                        ctx?.callbackQuery?.message?.message_id,
-                        undefined,
-                        PAY_BY_CARD_GIVE_LINK(tariff, command.split("_")[1] === 'russian'),
-                        {
-                            parse_mode: "HTML",
-                            disable_web_page_preview: true,
-                            reply_markup,
-                        }
-                    )
+                        const reply_markup = {
+                            inline_keyboard: buttonsWithLink.map((row) =>
+                                row.map((item) => {
+                                    if (item.command === 'ask_question') {
+                                        return {text: item.text, url: `https://t.me/${process.env.SUPPORT_USERNAME}`};
+                                    }
 
-                    order.msgId = sentMessage.message_id;
+                                    if (item.command === 'payment_link') {
+                                        return {text: item.text, url: order.output.paymentUrl};
+                                    }
 
-                    await new OrderService().updateOrder(order.orderId, order);
+                                    return {
+                                        text: item.text,
+                                        callback_data: JSON.stringify({command: item.command}),
+                                    };
+                                })
+                            ),
+                        };
 
-                    await ctx.scene.leave();
+                        const sentMessage = await ctx.telegram.editMessageText(
+                            ctx?.chat?.id,
+                            ctx?.callbackQuery?.message?.message_id,
+                            undefined,
+                            PAY_BY_CARD_GIVE_LINK(tariff, command.split("_")[1] === 'russian'),
+                            {
+                                parse_mode: "HTML",
+                                disable_web_page_preview: true,
+                                reply_markup,
+                            }
+                        )
+
+                        order.msgId = sentMessage.message_id;
+
+                        await new OrderService().updateOrder(order.orderId, order);
+
+                        await ctx.scene.leave();
+                    }
                 }
             }
 
