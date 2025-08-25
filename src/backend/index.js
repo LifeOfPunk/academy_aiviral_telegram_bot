@@ -21,6 +21,7 @@ app.use(bodyParser.json());
 
 const WEBHOOK_USERNAME = process.env.WEBHOOK_USERNAME;
 const WEBHOOK_PASSWORD = process.env.WEBHOOK_PASSWORD_PROCESSING;
+const WEBHOOK_PASSWORD_LAVA = process.env.WEBHOOK_PASSWORD;
 const BOT_NAME = process.env.BOT_NAME;
 
 const orderService = new OrderService();
@@ -60,7 +61,7 @@ const basicAuthMiddleware = (req, res, next) => {
 
     if (
         username !== WEBHOOK_USERNAME ||
-        password !== WEBHOOK_PASSWORD
+        password !== WEBHOOK_PASSWORD_LAVA
     ) {
         return res.status(401).send('Invalid username or password');
     }
