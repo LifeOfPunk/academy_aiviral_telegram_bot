@@ -116,7 +116,7 @@ export class UserService {
                     const user = await this.getUser(userId);
                     if (!user) continue;
 
-                    if (user.permissionsSynced === true) {
+                    if (user.permissionsSynced === true || user.subscriptionStatus === 'inactive') {
                         continue;
                     }
 

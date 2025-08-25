@@ -42,7 +42,7 @@ async function ensureInvite(userId) {
             { disable_web_page_preview: true }
         );
     } catch (e) {
-        console.error("ensureInvite error", MAIN_CHAT_ID, userId, e?.message);
+        console.error("ensureInvite error", userId, e?.message);
     }
 }
 
@@ -64,7 +64,7 @@ async function ensureInvitePremium(userId) {
             { disable_web_page_preview: true }
         );
     } catch (e) {
-        console.error("ensureInvite error", chatId, userId, e?.message);
+        console.error("ensureInvite error", userId, e?.message);
     }
 }
 
