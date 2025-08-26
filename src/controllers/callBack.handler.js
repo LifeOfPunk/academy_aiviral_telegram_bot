@@ -21,6 +21,7 @@ import {portfolioScreen} from "../screens/portfolio.screen.js";
 import {contactsScreen} from "../screens/contacts.screen.js";
 import {orderCryptoPaymentScreenHandler} from "../screens/orderCryptoPayment.screen.js";
 import {UserService} from "../services/User.service.js";
+import {confirmTariffHandler} from "../screens/confirmTariff.screen.js";
 
 export const callbackQueryHandler = async (
     ctx
@@ -75,6 +76,9 @@ export const callbackQueryHandler = async (
                 case 'free_lesson_start':
                     await freeLessonStartScreen(ctx, true);
                     break;
+                case 'confirmTariff':
+                    await paymentMethodsScreen(ctx, true);
+                    break;
                 case 'check_subscription':
                     await checkSubscriptionScreen(ctx, true);
                     break;
@@ -92,6 +96,9 @@ export const callbackQueryHandler = async (
                     break;
                 case 'choose_crypto':
                     await chooseCryptoForPayScreenHandler(ctx, {month: 1, isGift: false}, true);
+                    break;
+                case 'pay_card_scene':
+                    await payCardPackagesScreen(ctx, true);
                     break;
                 default:
                     await welcomeScreenHandler(ctx, true);
@@ -235,7 +242,7 @@ export const callbackQueryHandler = async (
             }
 
             // Package selections -> go into old payment flow
-            if (command === "order_card_start" || command === "order_card_pro" || command === "order_card_premium") {
+            if (command === "order_card_start_confirm" || command === "order_card_pro_confirm" || command === "order_card_premium_confirm") {
                 initNav();
                 if (ctx.session.currentScreen) ctx.session.navStack.push(ctx.session.currentScreen);
                 ctx.session.currentScreen = 'pay_card_scene';
@@ -243,11 +250,25 @@ export const callbackQueryHandler = async (
                 const tariff = command.split('_')[2]; // start|pro|premium
                 await ctx.scene.enter("payByCardScene", { tariff, isGift: false });
             }
-            if (command === "order_crypto_start" || command === "order_crypto_pro" || command === "order_crypto_premium") {
+            if (command === "order_crypto_start_confirm" || command === "order_crypto_pro_confirm" || command === "order_crypto_premium_confirm") {
                 initNav();
                 const tariff = command.split('_')[2];
                 ctx.session.chooseCryptoState = { tariff, isGift: false };
                 await navigateTo('choose_crypto', async () => chooseCryptoForPayScreenHandler(ctx, ctx.session.chooseCryptoState, true));
+            }
+
+            if (command === "order_card_start" || command === "order_card_pro" || command === "order_card_premium") {
+                initNav();
+                const tariff = command.split('_')[2];
+                ctx.session.chooseCryptoState = { tariff, isGift: false };
+
+                await navigateTo('confirmTariff', async () => confirmTariffHandler(ctx, command, ctx.session.chooseCryptoState, true));
+            }
+            if (command === "order_crypto_start" || command === "order_crypto_pro" || command === "order_crypto_premium") {
+                initNav();
+                const tariff = command.split('_')[2];
+                ctx.session.chooseCryptoState = { tariff, isGift: false };
+                await navigateTo('confirmTariff', async () => confirmTariffHandler(ctx, command, ctx.session.chooseCryptoState, true));
             }
 
             if (command.includes("choose_chain_crypto_")) {

@@ -49,10 +49,27 @@ payByCardScene.enter(async (ctx) => {
         ),
     };
 
-    await ctx.reply(PAY_BY_CARD_ASK_EMAIL, {
-        parse_mode: "HTML",
-        reply_markup,
-    });
+    if (!ctx.scene.session) ctx.scene.session = {};
+
+    if (ctx?.callbackQuery?.message?.message_id !== undefined) {
+        await ctx.telegram.editMessageText(
+            ctx.chat.id,
+            ctx.callbackQuery.message.message_id,
+            undefined,
+            PAY_BY_CARD_ASK_EMAIL,
+            {
+                parse_mode: "HTML",
+                reply_markup,
+            }
+        );
+        ctx.scene.session.promptMsgId = ctx.callbackQuery.message.message_id;
+    } else {
+        const sent = await ctx.reply(PAY_BY_CARD_ASK_EMAIL, {
+            parse_mode: "HTML",
+            reply_markup,
+        });
+        ctx.scene.session.promptMsgId = sent.message_id;
+    }
 });
 
 payByCardScene.command('cancel', async (ctx) => {
@@ -66,7 +83,6 @@ payByCardScene.command('start', async (ctx) => {
     await ctx.scene.leave();
     await welcomeScreenHandler(ctx, true);
 });
-
 
 payByCardScene.on(message('text'), async (ctx) => {
     const receivedText = ctx.text ?? '';
@@ -82,7 +98,7 @@ payByCardScene.on(message('text'), async (ctx) => {
                     rowItem.map((item) => {
                         let command;
 
-                        
+
                         if (initialState.isGift) {
                             command = `${item.command}_gift_${initialState.tariff}`;
                         } else {
@@ -118,10 +134,25 @@ payByCardScene.on(message('text'), async (ctx) => {
                 ),
             };
 
-            await ctx.reply(PAY_BY_CARD_ERROR_EMAIL_NOT_CORRECT, {
-                parse_mode: "HTML",
-                reply_markup: reply_markup,
-            });
+            const msgId = ctx.scene.session?.promptMsgId;
+            if (ctx?.chat?.id && msgId) {
+                await ctx.telegram.editMessageText(
+                    ctx.chat.id,
+                    msgId,
+                    undefined,
+                    PAY_BY_CARD_ERROR_EMAIL_NOT_CORRECT,
+                    {
+                        parse_mode: "HTML",
+                        reply_markup,
+                    }
+                );
+            } else {
+                // fallback, если по какой-то причине id не сохранили
+                await ctx.reply(PAY_BY_CARD_ERROR_EMAIL_NOT_CORRECT, {
+                    parse_mode: "HTML",
+                    reply_markup,
+                });
+            }
         }
     }
 });

@@ -279,7 +279,7 @@ app.post('/fiat_subscription', basicAuthMiddleware, async (req, res) => {
                 console.error(`Payment failed: ${errorMessage}`);
 
                 if (userId !== undefined) {
-                    await bot.telegram.sendMessage(userId, errorMessage);
+                    await bot.telegram.sendMessage(userId, `Ошибка оплаты, попробуйте снова`);
                 }
 
                 res.status(201).json({error: 'Payment failed'});

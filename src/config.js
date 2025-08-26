@@ -1,9 +1,9 @@
 
 export const GLOBAL_CONFIG = {
     tariffs: {
-        start: { title: 'Start', usdt: 3, rub: 50, offerIdLavaGift: '8d9bbf4d-ed9e-4836-91d9-122c79da3adc' },
-        pro: { title: 'Pro', usdt: 4, rub: 52, offerIdLavaGift: '61001e64-621b-4354-bbe6-3d809c12ac97' },
-        premium: { title: 'Premium', usdt: 5, rub: 55, offerIdLavaGift: 'c7186167-2423-46de-81ba-de1c4830563d' },
+        start: { title: 'Start', emoji: `🤝`, usdt: 3, rub: 50, offerIdLavaGift: '8d9bbf4d-ed9e-4836-91d9-122c79da3adc' },
+        pro: { title: 'Pro', emoji: `😎`, usdt: 4, rub: 52, offerIdLavaGift: '61001e64-621b-4354-bbe6-3d809c12ac97' },
+        premium: { title: 'Premium', emoji: `👑`, usdt: 5, rub: 55, offerIdLavaGift: 'c7186167-2423-46de-81ba-de1c4830563d' },
     },
     admins: [470239748, 892965815],
     supportedCrypto: {
@@ -42,6 +42,22 @@ export const GLOBAL_CONFIG = {
             { name: 'TON', processing: 'TON', chainName: 'TON' },
         ]
     },
+}
+
+export const WHAT_TARIFF = (tariff) => {
+    switch (tariff) {
+        case ('start'): {
+            return `Тариф Start включает в себя доступ в \nобщий чат к базовым урокам, без\nвозможности писать.`;
+        }
+
+        case ('pro'): {
+            return `Тариф Pro включает в себя доступ в \nобщий чат к базовым урокам, c\nвозможностью писать.`;
+        }
+
+        case ('premium'): {
+            return `Тариф Pro включает в себя доступ в \nобщий чат к базовым урокам, c\nвозможностью писать.\n\nИ специальный, премиум чат, так же  с возможностью писать`;
+        }
+    }
 }
 
 export const WELCOME_SCREEN_MESSAGE = `Выберите действие:`;
@@ -121,12 +137,13 @@ export const ERROR_NO_SUPPORTED_CRYPTO = `Ошибка! В данный моме
 export const ERROR_UNSUCCESSFULL_CHECK = `Пожалуйста, подождите, пока мы подтвердим вашу транзакцию`;
 export const ERROR_TEST_OR_PAYMENT_ERROR = `Что-то пошло не так. Пожалуйста, обратитесь в службу поддержки. Ошибка: -10`;
 export const ERROR_UNDEFINED_PAYMENT = `Что-то пошло не так. Пожалуйста, обратитесь в службу поддержки. Ошибка: -11`;
-export const ERROR_PAYMENT_CANCELLED = (wallet) => {
+export const ERROR_PAYMENT_CANCELLED = (wallet, tariff) => {
     const masked = wallet.length > 8 ? `${wallet.slice(0, 4)}...${wallet.slice(-4)}` : wallet;
+    const t = GLOBAL_CONFIG.tariffs[tariff];
 
     return `Вы не завершили оплату в течении 30 минут.
 
-Не переводите НИКАКИЕ средства на кошелек ${masked}
+Не переводите средства по тарифу ${t.title} (${t.usdt} USDT) на кошелек ${masked}
 Выберите вместо этого другой способ оплаты.`;
 };
 
@@ -141,10 +158,9 @@ export const PAY_BY_CARD_ASK_CARD = 'Какой картой вы хотите �
 
 export const PAY_BY_CARD_GIVE_LINK = (tariffKey, isRussianCard = true) => {
     const t = GLOBAL_CONFIG.tariffs[tariffKey];
-    const title = t?.title ?? 'Start';
 
     return `Сумма к оплате:
-${title}: ${t?.rub}₽
+${t.emoji} ${t?.title}: ${t?.rub}₽
 Проводя оплату вы соглашаетесь с договором-оферта и политикой конфиденциальности
 
 *У вас есть ${isRussianCard ? '1 час' : '15 минут'} для завершения оплаты! Иначе заказ будет отменён.

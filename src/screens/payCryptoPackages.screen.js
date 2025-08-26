@@ -4,17 +4,17 @@ import { GLOBAL_CONFIG } from '../config.js';
 export const payCryptoPackagesScreen = async (ctx, editMessage) => {
   const t = GLOBAL_CONFIG.tariffs;
   const keyboard = [
-    [ { text: `🤝 ${t.start.title} (${t.start.usdt} USDT)`, command: 'order_crypto_start' } ],
-    [ { text: `😎 ${t.pro.title} (${t.pro.usdt} USDT)`, command: 'order_crypto_pro' } ],
-    [ { text: `👑 ${t.premium.title} (${t.premium.usdt} USDT)`, command: 'order_crypto_premium' } ],
+    [ { text: `${t.start.emoji} ${t.start.title} (${t.start.usdt} USDT)`, command: 'order_crypto_start' } ],
+    [ { text: `${t.pro.emoji} ${t.pro.title} (${t.pro.usdt} USDT)`, command: 'order_crypto_pro' } ],
+    [ { text: `${t.premium.emoji} ${t.premium.title} (${t.premium.usdt} USDT)`, command: 'order_crypto_premium' } ],
     [ { text: '❓ Задать вопрос', command: 'ask_question' } ],
     [ { text: '⏪ Вернуться назад', command: 'back' } ],
   ];
 
   const message = `Стоимость с пожизненным доступом:
-🤝${t.start.title}: ${t.start.usdt}$ (${t.start.rub}₽)
-😎${t.pro.title}: ${t.pro.usdt}$ (${t.pro.rub} ₽)
-👑${t.premium.title}: ${t.premium.usdt}$ (${t.premium.rub} ₽)`;
+${t.start.emoji} ${t.start.title}: ${t.start.usdt}$ (${t.start.rub}₽)
+${t.pro.emoji} ${t.pro.title}: ${t.pro.usdt}$ (${t.pro.rub} ₽)
+${t.premium.emoji} ${t.premium.title}: ${t.premium.usdt}$ (${t.premium.rub} ₽)`;
 
   const reply_markup = {
     inline_keyboard: keyboard.map((row) =>
