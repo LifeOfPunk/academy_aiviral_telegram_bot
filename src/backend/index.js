@@ -116,7 +116,11 @@ app.post('/crypto_payment', async (req, res) => {
                                 await applyPlanForUser(userId, tariff);
 
                                 if (order.msgId !== undefined) {
-                                    await bot.telegram.deleteMessage(userId, order.msgId);
+                                    try {
+                                        await bot.telegram.deleteMessage(userId, order.msgId);
+                                    } catch (e) {
+                                        console.log(e);
+                                    }
                                 }
                             } else {
                                 console.log('Payment successful but something wrong');
@@ -132,7 +136,11 @@ app.post('/crypto_payment', async (req, res) => {
                                 });
 
                                 if (order.msgId !== undefined) {
-                                    await bot.telegram.deleteMessage(userId, order.msgId);
+                                    try {
+                                        await bot.telegram.deleteMessage(userId, order.msgId);
+                                    } catch (e) {
+                                        console.log(e);
+                                    }
                                 }
                             } else {
                                 console.error('Failed to update order status after successful payment.');
@@ -153,7 +161,11 @@ app.post('/crypto_payment', async (req, res) => {
                     await bot.telegram.sendMessage(userId, ERROR_INSUFFICIENT_AMOUNT);
                 }
             } else {
-                await bot.telegram.sendMessage(userId, ERROR_TEST_OR_PAYMENT_ERROR);
+                try {
+                    await bot.telegram.sendMessage(userId, ERROR_TEST_OR_PAYMENT_ERROR);
+                } catch (e) {
+                    console.log(e);
+                }
                 console.log('PaymentID DONT MATCH WITH DATA IN DATABASE OR TEST IS SET');
             }
         } else if (Status === 'Canceled') {
@@ -161,13 +173,21 @@ app.post('/crypto_payment', async (req, res) => {
             await bot.telegram.sendMessage(userId, ERROR_PAYMENT_CANCELLED);
 
             if (order.msgId !== undefined) {
-                await bot.telegram.deleteMessage(userId, order.msgId);
+                try {
+                    await bot.telegram.deleteMessage(userId, order.msgId);
+                } catch (e) {
+                    console.log(e)
+                }
             }
         } else if (Status === 'Insufficient') {
             console.log('Payment is insufficient.');
             if (Insufficient) {
                 console.log('Underpaid amount confirmed as successful.');
-                await bot.telegram.sendMessage(userId, ERROR_INSUFFICIENT_AMOUNT);
+                try {
+                    await bot.telegram.sendMessage(userId, ERROR_INSUFFICIENT_AMOUNT);
+                } catch (e) {
+                    console.log(e);
+                }
             }
         }
 
@@ -296,8 +316,10 @@ http.createServer(app).listen(PORT, () => {
 
 process.on('uncaughtException', (error) => {
     logger.error('FATAL ERROR: ', error);
+    setTimeout(() => process.exit(1), 1000);
 });
 
 process.on('unhandledRejection', (reason, promise) => {
     logger.error('FATAL ERROR: Unhandled Rejection at:', promise, 'reason:', reason);
+    setTimeout(() => process.exit(1), 1000);
 });
