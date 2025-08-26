@@ -170,7 +170,7 @@ app.post('/crypto_payment', async (req, res) => {
             }
         } else if (Status === 'Canceled') {
             console.log('Payment was canceled.');
-            await bot.telegram.sendMessage(userId, ERROR_PAYMENT_CANCELLED);
+            await bot.telegram.sendMessage(userId, ERROR_PAYMENT_CANCELLED(order.output.address));
 
             if (order.msgId !== undefined) {
                 try {

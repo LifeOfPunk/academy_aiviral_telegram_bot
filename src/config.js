@@ -121,9 +121,15 @@ export const ERROR_NO_SUPPORTED_CRYPTO = `Ошибка! В данный моме
 export const ERROR_UNSUCCESSFULL_CHECK = `Пожалуйста, подождите, пока мы подтвердим вашу транзакцию`;
 export const ERROR_TEST_OR_PAYMENT_ERROR = `Что-то пошло не так. Пожалуйста, обратитесь в службу поддержки. Ошибка: -10`;
 export const ERROR_UNDEFINED_PAYMENT = `Что-то пошло не так. Пожалуйста, обратитесь в службу поддержки. Ошибка: -11`;
-export const ERROR_PAYMENT_CANCELLED = `Вы не завершили оплату в течение 30 минут. 
+export const ERROR_PAYMENT_CANCELLED = (wallet) => {
+    const masked = wallet.length > 8 ? `${wallet.slice(0, 4)}...${wallet.slice(-4)}` : wallet;
 
-Заказ был отменён. Не переводите средства на кошелёк.`;
+    return `Вы не завершили оплату в течении 30 минут.
+
+Не переводите НИКАКИЕ средства на кошелек ${masked}
+Выберите вместо этого другой способ оплаты.`;
+};
+
 export const ERROR_INSUFFICIENT_AMOUNT = `Вы заплатили недостаточную сумму. Пожалуйста, обратитесь в службу поддержки.`;
 export const ERROR_PAYMENT_IS_LESS_THEN_MINIMUM = `Сумма оплаты слишком мала для этой сети. Попробуйте другую.`;
 export const ERROR_PROMO_ALREADY_USED = `Промо-код уже использован!`;
