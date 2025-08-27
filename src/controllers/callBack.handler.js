@@ -102,6 +102,9 @@ export const callbackQueryHandler = async (ctx) => {
                 case 'pay_card':
                     await payCardPackagesScreen(ctx, true);
                     break;
+                case 'faq':
+                    await faqScreen(ctx, true);
+                    break;
                 case 'pay_crypto':
                     await payCryptoPackagesScreen(ctx, true);
                     break;
