@@ -15,6 +15,7 @@ import { contactsScreen } from '../screens/contacts.screen.js';
 import { confirmTariffHandler } from '../screens/confirmTariff.screen.js';
 import { payCryptoFinalScreen } from '../screens/payCryptoFinal.screen.js';
 import { payCardFinalScreen } from '../screens/payCardFinal.screen.js';
+import { faqScreen } from '../screens/faq.screen.js';
 
 export const callbackQueryHandler = async (ctx) => {
     const { callbackQuery, chat } = ctx;
@@ -23,6 +24,7 @@ export const callbackQueryHandler = async (ctx) => {
 
     if ('data' in callbackQuery) {
         const { command } = JSON.parse(callbackQuery.data);
+        console.log(command);
 
         const opts = {
             message_id: callbackQuery.message?.message_id,
@@ -50,9 +52,25 @@ export const callbackQueryHandler = async (ctx) => {
                 }
             } catch (e) {}
             const prev = ctx.session.navStack.pop();
+            console.log(ctx.session.navStack);
             console.log(prev + ' prev');
             const target = prev || 'start';
             ctx.session.currentScreen = target;
+
+            if (target.includes(`confirmTariff`)) {
+                await confirmTariffHandler(
+                    ctx,
+                    target
+                        .split('_')
+                        .filter((w) => w !== 'confirmTariff')
+                        .join('_'),
+                    ctx.session.chooseCryptoState,
+                    true,
+                );
+
+                return;
+            }
+
             switch (target) {
                 case 'start':
                     await welcomeScreenHandler(ctx, true);
@@ -72,15 +90,6 @@ export const callbackQueryHandler = async (ctx) => {
                 case 'free_lesson_start':
                     await freeLessonStartScreen(ctx, true);
                     break;
-                case 'confirmTariff':
-                    console.log(ctx.session;)
-                    await confirmTariffHandler(
-                        ctx,
-                        command,
-                        ctx.session.chooseCryptoState,
-                        true,
-                    );
-                    break;
                 case 'check_subscription':
                     await checkSubscriptionScreen(ctx, true);
                     break;
@@ -96,6 +105,9 @@ export const callbackQueryHandler = async (ctx) => {
                 case 'pay_crypto':
                     await payCryptoPackagesScreen(ctx, true);
                     break;
+                case 'pay_crypto_final':
+                    await payCryptoPackagesScreen(ctx, true);
+                    break;
                 case 'choose_crypto':
                     await chooseCryptoForPayScreenHandler(
                         ctx,
@@ -104,11 +116,7 @@ export const callbackQueryHandler = async (ctx) => {
                     );
                     break;
                 case 'choose_chain':
-                    await chooseChainForPayScreenHandler(
-                        ctx,
-                        ctx.session.chooseCryptoState,
-                        true,
-                    );
+                    await payCryptoPackagesScreen(ctx, true);
                     break;
                 case 'pay_card_scene':
                     await payCardPackagesScreen(ctx, true);
@@ -143,6 +151,9 @@ export const callbackQueryHandler = async (ctx) => {
                 await navigateTo('about_aviral', async () =>
                     aboutAviralScreen(ctx, true),
                 );
+            }
+            if (command === 'faq') {
+                await navigateTo('faq', async () => await faqScreen(ctx, true));
             }
             if (command === 'aviral_more') {
                 await navigateTo('aviral_more', async () =>
@@ -343,7 +354,6 @@ export const callbackQueryHandler = async (ctx) => {
                 );
             }
 
-            // Package selections -> go into old payment flow
             if (
                 command === 'order_card_start_confirm' ||
                 command === 'order_card_pro_confirm' ||
@@ -353,8 +363,8 @@ export const callbackQueryHandler = async (ctx) => {
                 if (ctx.session.currentScreen)
                     ctx.session.navStack.push(ctx.session.currentScreen);
                 ctx.session.currentScreen = 'pay_card_scene';
+                const tariff = command.split('_')[2];
 
-                const tariff = command.split('_')[2]; // start|pro|premium
                 await ctx.scene.enter('payByCardScene', {
                     tariff,
                     isGift: false,
@@ -368,6 +378,7 @@ export const callbackQueryHandler = async (ctx) => {
                 initNav();
                 const tariff = command.split('_')[2];
                 ctx.session.chooseCryptoState = { tariff, isGift: false };
+
                 await navigateTo('choose_crypto', async () =>
                     chooseCryptoForPayScreenHandler(
                         ctx,
@@ -386,7 +397,7 @@ export const callbackQueryHandler = async (ctx) => {
                 const tariff = command.split('_')[2];
                 ctx.session.chooseCryptoState = { tariff, isGift: false };
 
-                await navigateTo('confirmTariff', async () =>
+                await navigateTo(`confirmTariff_${command}`, async () =>
                     confirmTariffHandler(
                         ctx,
                         command,
@@ -403,7 +414,8 @@ export const callbackQueryHandler = async (ctx) => {
                 initNav();
                 const tariff = command.split('_')[2];
                 ctx.session.chooseCryptoState = { tariff, isGift: false };
-                await navigateTo('confirmTariff', async () =>
+
+                await navigateTo(`confirmTariff_${command}`, async () =>
                     confirmTariffHandler(
                         ctx,
                         command,

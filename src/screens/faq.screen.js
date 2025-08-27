@@ -2,15 +2,12 @@ import 'dotenv/config';
 import { sendOrEdit } from '../utils/media.js';
 
 const keyboard = [
-    [{ text: '📖 Подробнее об aiVIRAL', command: 'aviral_more' }],
-    [{ text: '📂 Примеры работ', command: 'portfolio' }],
-    [{ text: '🤠 FAQ', command: 'faq' }],
     [{ text: '❓ Задать вопрос', command: 'ask_question' }],
     [{ text: '⏪ Вернуться назад', command: 'back' }],
 ];
 
-export const aboutAviralScreen = async (ctx, editMessage) => {
-    const message = 'Кто такие aiVIRAL?';
+export const faqScreen = async (ctx, editMessage) => {
+    const message = 'FAQ TEXT';
 
     const reply_markup = {
         inline_keyboard: keyboard.map((row) =>
@@ -35,7 +32,7 @@ export const aboutAviralScreen = async (ctx, editMessage) => {
         editMessage,
         text: message,
         reply_markup,
-        photoCandidates: ['src/data/aboutAviral.jpg'],
+        photoCandidates: ['src/data/faq.jpg'],
         parse_mode: 'HTML',
         disable_web_page_preview: true,
     });
