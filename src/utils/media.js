@@ -7,11 +7,11 @@ const __dirname = path.dirname(__filename);
 
 const resolveFirstExisting = (paths) => {
     const candidates = Array.isArray(paths) ? paths : [paths];
-    console.log(candidates);
     for (const p of candidates) {
         if (!p) continue;
-        //const full = path.isAbsolute(p) ? p : path.resolve(projectRoot, p);
-        if (fs.existsSync(p)) return p;
+        const full = path.isAbsolute(p) ? p : path.resolve(projectRoot, p);
+        console.log('checking:', full);
+        if (fs.existsSync(full)) return full;
     }
     return null;
 };
