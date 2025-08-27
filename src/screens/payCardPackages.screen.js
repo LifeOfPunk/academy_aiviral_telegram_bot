@@ -49,8 +49,6 @@ ${t.premium.emoji} ${t.premium.title}: ${t.premium.usdt}$ (${t.premium.rub} ₽)
         ),
     };
 
-    if (!ctx?.chat?.id) return;
-
     await sendOrEdit(ctx, {
         editMessage,
         text: message,
