@@ -22,7 +22,7 @@ export const callbackQueryHandler = async (ctx) => {
     if (!callbackQuery || !chat) return;
 
     if ('data' in callbackQuery) {
-        const data = JSON.parse(callbackQuery.data);
+        const { command } = JSON.parse(callbackQuery.data);
 
         const opts = {
             message_id: callbackQuery.message?.message_id,
@@ -73,7 +73,12 @@ export const callbackQueryHandler = async (ctx) => {
                     await freeLessonStartScreen(ctx, true);
                     break;
                 case 'confirmTariff':
-                    await confirmTariffHandler(ctx, true);
+                    await confirmTariffHandler(
+                        ctx,
+                        command,
+                        ctx.session.chooseCryptoState,
+                        true,
+                    );
                     break;
                 case 'check_subscription':
                     await checkSubscriptionScreen(ctx, true);
@@ -93,7 +98,7 @@ export const callbackQueryHandler = async (ctx) => {
                 case 'choose_crypto':
                     await chooseCryptoForPayScreenHandler(
                         ctx,
-                        { month: 1, isGift: false },
+                        ctx.session.chooseCryptoState,
                         true,
                     );
                     break;
@@ -106,9 +111,6 @@ export const callbackQueryHandler = async (ctx) => {
         };
 
         if (opts.message_id) {
-            const command = data.command;
-            console.log(command);
-
             // Back handler
             if (command === 'back') {
                 await goBack();
