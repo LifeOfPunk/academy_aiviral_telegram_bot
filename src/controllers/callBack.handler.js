@@ -73,8 +73,7 @@ export const callbackQueryHandler = async (ctx) => {
                     await freeLessonStartScreen(ctx, true);
                     break;
                 case 'confirmTariff':
-                    const tariff = command.split('_')[2];
-                    ctx.session.chooseCryptoState = { tariff, isGift: false };
+                    console.log(ctx.session;)
                     await confirmTariffHandler(
                         ctx,
                         command,
