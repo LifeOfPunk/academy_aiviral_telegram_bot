@@ -11,6 +11,7 @@ const resolveFirstExisting = (paths) => {
     for (const p of candidates) {
         if (!p) continue;
         const full = path.isAbsolute(p) ? p : path.resolve(projectRoot, p);
+        console.log('checking:', full);
         if (fs.existsSync(full)) return full;
     }
     return null;
