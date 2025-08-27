@@ -4,10 +4,10 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const projectRoot = path.resolve(__dirname, '..', '..');
 
 const resolveFirstExisting = (paths) => {
     const candidates = Array.isArray(paths) ? paths : [paths];
+    console.log(candidates);
     for (const p of candidates) {
         if (!p) continue;
         //const full = path.isAbsolute(p) ? p : path.resolve(projectRoot, p);
@@ -65,6 +65,7 @@ export const sendOrEdit = async (
         }
 
         const absPath = resolveFirstExisting(photoCandidates);
+        console.log(absPath);
 
         if (absPath) {
             await ctx.telegram.editMessageMedia(
