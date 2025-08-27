@@ -10,8 +10,8 @@ const resolveFirstExisting = (paths) => {
     const candidates = Array.isArray(paths) ? paths : [paths];
     for (const p of candidates) {
         if (!p) continue;
-        const full = path.isAbsolute(p) ? p : path.resolve(projectRoot, p);
-        if (fs.existsSync(full)) return full;
+        //const full = path.isAbsolute(p) ? p : path.resolve(projectRoot, p);
+        if (fs.existsSync(p)) return p;
     }
     return null;
 };
