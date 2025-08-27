@@ -1,12 +1,13 @@
-import {Scenes} from "telegraf";
+import { Scenes } from 'telegraf';
 import {
     PAY_BY_CARD_ASK_CARD,
     PAY_BY_CARD_ASK_EMAIL,
     PAY_BY_CARD_ERROR_EMAIL_NOT_CORRECT,
-} from "../config.js";
-import {message} from "telegraf/filters";
-import {welcomeScreenHandler} from "../screens/welcome.screen.js";
-import {UserService} from "../services/User.service.js";
+} from '../config.js';
+import { message } from 'telegraf/filters';
+import { welcomeScreenHandler } from '../screens/welcome.screen.js';
+import { UserService } from '../services/User.service.js';
+import { sendOrEdit } from '../utils/media.js';
 
 const cardType = [
     [
@@ -17,16 +18,11 @@ const cardType = [
         {
             text: `🌍 Остальные страны`,
             command: `pay_world_card`,
-        }
+        },
     ],
-]
+];
 
-const backButton = [
-    [
-        {text: '⏪ Вернуться назад', command: 'back' },
-    ]
-]
-
+const backButton = [[{ text: '⏪ Вернуться назад', command: 'back' }]];
 
 export const payByCardScene = new Scenes.BaseScene('payByCardScene');
 
@@ -44,31 +40,42 @@ payByCardScene.enter(async (ctx) => {
                     callback_data: JSON.stringify({
                         command,
                     }),
-                }
-            })
+                };
+            }),
         ),
     };
 
     if (!ctx.scene.session) ctx.scene.session = {};
 
     if (ctx?.callbackQuery?.message?.message_id !== undefined) {
-        await ctx.telegram.editMessageText(
-            ctx.chat.id,
-            ctx.callbackQuery.message.message_id,
-            undefined,
-            PAY_BY_CARD_ASK_EMAIL,
-            {
-                parse_mode: "HTML",
-                reply_markup,
-            }
-        );
-        ctx.scene.session.promptMsgId = ctx.callbackQuery.message.message_id;
-    } else {
-        const sent = await ctx.reply(PAY_BY_CARD_ASK_EMAIL, {
-            parse_mode: "HTML",
+        await sendOrEdit(ctx, {
+            editMessage: true,
+            text: PAY_BY_CARD_ASK_EMAIL,
             reply_markup,
+            photoCandidates: [
+                './src/data/pay_card_email_check_image.jpg',
+                './src/data/screen_name_image.jpg',
+            ],
+            parse_mode: 'HTML',
         });
-        ctx.scene.session.promptMsgId = sent.message_id;
+        ctx.scene.session.promptMsgId = ctx.callbackQuery.message.message_id;
+        const original = ctx.callbackQuery.message;
+        ctx.scene.session.promptIsPhoto =
+            Array.isArray(original?.photo) && original.photo.length > 0;
+    } else {
+        const sent = await sendOrEdit(ctx, {
+            editMessage: false,
+            text: PAY_BY_CARD_ASK_EMAIL,
+            reply_markup,
+            photoCandidates: [
+                './src/data/pay_card_email_check_image.jpg',
+                './src/data/screen_name_image.jpg',
+            ],
+            parse_mode: 'HTML',
+        });
+        ctx.scene.session.promptMsgId = sent?.message_id;
+        ctx.scene.session.promptIsPhoto =
+            Array.isArray(sent?.photo) && sent.photo.length > 0;
     }
 });
 
@@ -91,13 +98,15 @@ payByCardScene.on(message('text'), async (ctx) => {
     if (!ctx?.scene?.session?.email && ctx?.from?.id) {
         if (/\S+@\S+\.\S+/.test(receivedText)) {
             ctx.scene.session.email = ctx.message.text;
-            await new UserService().addEmailToUser(ctx?.from?.id, ctx.message.text);
+            await new UserService().addEmailToUser(
+                ctx?.from?.id,
+                ctx.message.text,
+            );
 
             const reply_markup = {
                 inline_keyboard: cardType.map((rowItem) =>
                     rowItem.map((item) => {
                         let command;
-
 
                         if (initialState.isGift) {
                             command = `${item.command}_gift_${initialState.tariff}`;
@@ -110,15 +119,15 @@ payByCardScene.on(message('text'), async (ctx) => {
                             callback_data: JSON.stringify({
                                 command,
                             }),
-                        }
-                    })
+                        };
+                    }),
                 ),
             };
 
             await ctx.reply(PAY_BY_CARD_ASK_CARD, {
                 parse_mode: 'HTML',
                 reply_markup,
-            })
+            });
         } else {
             const reply_markup = {
                 inline_keyboard: backButton.map((rowItem) =>
@@ -129,8 +138,8 @@ payByCardScene.on(message('text'), async (ctx) => {
                             callback_data: JSON.stringify({
                                 command,
                             }),
-                        }
-                    })
+                        };
+                    }),
                 ),
             };
 
@@ -142,14 +151,14 @@ payByCardScene.on(message('text'), async (ctx) => {
                     undefined,
                     PAY_BY_CARD_ERROR_EMAIL_NOT_CORRECT,
                     {
-                        parse_mode: "HTML",
+                        parse_mode: 'HTML',
                         reply_markup,
-                    }
+                    },
                 );
             } else {
                 // fallback, если по какой-то причине id не сохранили
                 await ctx.reply(PAY_BY_CARD_ERROR_EMAIL_NOT_CORRECT, {
-                    parse_mode: "HTML",
+                    parse_mode: 'HTML',
                     reply_markup,
                 });
             }

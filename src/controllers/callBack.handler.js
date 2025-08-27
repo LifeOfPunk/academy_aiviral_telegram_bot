@@ -55,6 +55,7 @@ export const callbackQueryHandler = async (
             // leave any active scene
             try { if (ctx.scene && ctx.scene.current) { await ctx.scene.leave(); } } catch (e) {}
             const prev = ctx.session.navStack.pop();
+            console.log(prev + ' prev')
             const target = prev || 'start';
             ctx.session.currentScreen = target;
             switch (target) {

@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { sendOrEdit } from '../utils/media.js';
 
 const keyboard = [
   [ { text: '🐦 Twitter', command: 'aviral_twitter' } ],
@@ -29,23 +30,15 @@ export const aviralMoreScreen = async (ctx, editMessage) => {
 
   if (!ctx?.chat?.id) return;
 
-  if (!editMessage) {
-    await ctx.telegram.sendMessage(ctx.chat.id, message, {
-      parse_mode: 'HTML',
-      disable_web_page_preview: true,
-      reply_markup,
-    });
-  } else {
-    await ctx.telegram.editMessageText(
-      ctx.chat.id,
-      ctx.callbackQuery?.message?.message_id,
-      undefined,
-      message,
-      {
-        parse_mode: 'HTML',
-        disable_web_page_preview: true,
-        reply_markup,
-      }
-    );
-  }
+  await sendOrEdit(ctx, {
+    editMessage,
+    text: message,
+    reply_markup,
+    photoCandidates: [
+      'src/data/aviral_more_image.jpg',
+      'src/data/screen_name_image.jpg',
+    ],
+    parse_mode: 'HTML',
+    disable_web_page_preview: true,
+  });
 };

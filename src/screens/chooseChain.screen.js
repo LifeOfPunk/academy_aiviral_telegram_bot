@@ -1,12 +1,25 @@
-import {CHOOSE_CHAIN, ERROR_NO_SUPPORTED_CRYPTO, GLOBAL_CONFIG} from "../config.js";
+import {
+    CHOOSE_CHAIN,
+    ERROR_NO_SUPPORTED_CRYPTO,
+    GLOBAL_CONFIG,
+} from '../config.js';
+import { sendOrEdit } from '../utils/media.js';
 
-export const chooseChainForPayScreenHandler = async (ctx, initialState, editMessage) => {
+export const chooseChainForPayScreenHandler = async (
+    ctx,
+    initialState,
+    editMessage,
+) => {
     const supportedCurrency = GLOBAL_CONFIG.supportedCrypto;
 
-    const chosenCurrency = Object.keys(supportedCurrency).find(curr => curr === initialState.symbol);
+    const chosenCurrency = Object.keys(supportedCurrency).find(
+        (curr) => curr === initialState.symbol,
+    );
 
     if (chosenCurrency !== undefined) {
-        const chooseCryptoForPayScreenKeyboard = supportedCurrency[chosenCurrency].map(chainInfo => {
+        const chooseCryptoForPayScreenKeyboard = supportedCurrency[
+            chosenCurrency
+        ].map((chainInfo) => {
             let command;
 
             if (initialState.isGift) {
@@ -15,24 +28,22 @@ export const chooseChainForPayScreenHandler = async (ctx, initialState, editMess
                 command = `pay_crypto_${chainInfo.processing}_${initialState.tariff}`;
             }
 
-            return [
-                {text: `✅ ${chainInfo.name}`, command, }
-            ]
+            return [{ text: `✅ ${chainInfo.name}`, command }];
         });
 
         chooseCryptoForPayScreenKeyboard.push(
             [{ text: '❓ Задать вопрос', command: 'ask_question' }],
-            [{ text: "⏪ Вернуться назад", command: 'back' }]
+            [{ text: '⏪ Вернуться назад', command: 'back' }],
         );
 
         const reply_markup = {
             inline_keyboard: chooseCryptoForPayScreenKeyboard.map((rowItem) =>
                 rowItem.map((item) => {
-                    if (item.command === "ask_question") {
+                    if (item.command === 'ask_question') {
                         return {
                             text: item.text,
                             url: `https://t.me/${process.env.SUPPORT_USERNAME}`,
-                        }
+                        };
                     }
 
                     return {
@@ -41,37 +52,25 @@ export const chooseChainForPayScreenHandler = async (ctx, initialState, editMess
                             command: item.command,
                         }),
                     };
-                })
+                }),
             ),
         };
 
-        if (ctx?.chat?.id !== undefined) {
-            if (!editMessage) {
-                await ctx.telegram.sendMessage(
-                    ctx?.chat?.id,
-                    CHOOSE_CHAIN,
-                    {
-                        parse_mode: "HTML",
-                        disable_web_page_preview: true,
-                        reply_markup,
-                    });
-            } else {
-                await ctx.telegram.editMessageText(
-                    ctx?.chat?.id,
-                    ctx?.callbackQuery?.message?.message_id,
-                    undefined,
-                    CHOOSE_CHAIN,
-                    {
-                        parse_mode: "HTML",
-                        disable_web_page_preview: true,
-                        reply_markup,
-                    }
-                )
-            }
-        }
-    } else {
-        await ctx.telegram.sendMessage(ctx?.chat?.id, ERROR_NO_SUPPORTED_CRYPTO, {
-            parse_mode: "HTML",
+        await sendOrEdit(ctx, {
+            editMessage,
+            text: CHOOSE_CHAIN,
+            reply_markup,
+            photoCandidates: ['src/data/chooseChain.jpg'],
+            parse_mode: 'HTML',
+            disable_web_page_preview: true,
         });
+    } else {
+        await ctx.telegram.sendMessage(
+            ctx?.chat?.id,
+            ERROR_NO_SUPPORTED_CRYPTO,
+            {
+                parse_mode: 'HTML',
+            },
+        );
     }
-}
+};
