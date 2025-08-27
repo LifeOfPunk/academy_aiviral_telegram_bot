@@ -102,6 +102,13 @@ export const callbackQueryHandler = async (ctx) => {
                         true,
                     );
                     break;
+                case 'choose_chain':
+                    await chooseChainForPayScreenHandler(
+                        ctx,
+                        ctx.session.chooseCryptoState,
+                        true,
+                    );
+                    break;
                 case 'pay_card_scene':
                     await payCardPackagesScreen(ctx, true);
                     break;

@@ -125,7 +125,7 @@ export const payCardFinalScreen = async (ctx, command) => {
                 },
             );
 
-            order.msgId = sentMessage.message_id;
+            order.msgId = sentMessage?.message_id;
 
             await new OrderService().updateOrder(order.orderId, order);
 
