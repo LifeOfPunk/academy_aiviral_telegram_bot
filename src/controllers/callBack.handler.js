@@ -1,36 +1,34 @@
-import {welcomeScreenHandler} from "../screens/welcome.screen.js";
-import {chooseCryptoForPayScreenHandler} from "../screens/chooseCrypto.screen.js";
-import {CryptoPaymentApiService} from "../services/PaymentApi.service.js";
+import { welcomeScreenHandler } from '../screens/welcome.screen.js';
+import { chooseCryptoForPayScreenHandler } from '../screens/chooseCrypto.screen.js';
+import { CryptoPaymentApiService } from '../services/PaymentApi.service.js';
 import {
     ERROR_UNSUCCESSFULL_CHECK,
     GLOBAL_CONFIG,
-    PAY_BY_CARD_GIVE_LINK
-} from "../config.js";
-import {chooseChainForPayScreenHandler} from "../screens/chooseChain.screen.js";
-import {PaymentFiatServiceClass} from "../services/PaymentFiat.service.js";
-import {OrderService} from "../services/Order.service.js";
-import {freeLessonStartScreen} from "../screens/freeLessonStart.screen.js";
-import {checkSubscriptionScreen} from "../screens/checkSubscription.screen.js";
-import {freeLessonScreen} from "../screens/freeLesson.screen.js";
-import {paymentMethodsScreen} from "../screens/paymentMethods.screen.js";
-import {payCardPackagesScreen} from "../screens/payCardPackages.screen.js";
-import {payCryptoPackagesScreen} from "../screens/payCryptoPackages.screen.js";
-import {aboutAviralScreen} from "../screens/aboutAviral.screen.js";
-import {aviralMoreScreen} from "../screens/aviralMore.screen.js";
-import {portfolioScreen} from "../screens/portfolio.screen.js";
-import {contactsScreen} from "../screens/contacts.screen.js";
-import {orderCryptoPaymentScreenHandler} from "../screens/orderCryptoPayment.screen.js";
-import {UserService} from "../services/User.service.js";
-import {confirmTariffHandler} from "../screens/confirmTariff.screen.js";
+    PAY_BY_CARD_GIVE_LINK,
+} from '../config.js';
+import { chooseChainForPayScreenHandler } from '../screens/chooseChain.screen.js';
+import { PaymentFiatServiceClass } from '../services/PaymentFiat.service.js';
+import { OrderService } from '../services/Order.service.js';
+import { freeLessonStartScreen } from '../screens/freeLessonStart.screen.js';
+import { checkSubscriptionScreen } from '../screens/checkSubscription.screen.js';
+import { freeLessonScreen } from '../screens/freeLesson.screen.js';
+import { paymentMethodsScreen } from '../screens/paymentMethods.screen.js';
+import { payCardPackagesScreen } from '../screens/payCardPackages.screen.js';
+import { payCryptoPackagesScreen } from '../screens/payCryptoPackages.screen.js';
+import { aboutAviralScreen } from '../screens/aboutAviral.screen.js';
+import { aviralMoreScreen } from '../screens/aviralMore.screen.js';
+import { portfolioScreen } from '../screens/portfolio.screen.js';
+import { contactsScreen } from '../screens/contacts.screen.js';
+import { orderCryptoPaymentScreenHandler } from '../screens/orderCryptoPayment.screen.js';
+import { UserService } from '../services/User.service.js';
+import { confirmTariffHandler } from '../screens/confirmTariff.screen.js';
 
-export const callbackQueryHandler = async (
-    ctx
-) => {
+export const callbackQueryHandler = async (ctx) => {
     const { callbackQuery, chat } = ctx;
 
     if (!callbackQuery || !chat) return;
 
-    if ("data" in callbackQuery) {
+    if ('data' in callbackQuery) {
         const data = JSON.parse(callbackQuery.data);
 
         const opts = {
@@ -53,9 +51,13 @@ export const callbackQueryHandler = async (
         const goBack = async () => {
             initNav();
             // leave any active scene
-            try { if (ctx.scene && ctx.scene.current) { await ctx.scene.leave(); } } catch (e) {}
+            try {
+                if (ctx.scene && ctx.scene.current) {
+                    await ctx.scene.leave();
+                }
+            } catch (e) {}
             const prev = ctx.session.navStack.pop();
-            console.log(prev + ' prev')
+            console.log(prev + ' prev');
             const target = prev || 'start';
             ctx.session.currentScreen = target;
             switch (target) {
@@ -78,13 +80,13 @@ export const callbackQueryHandler = async (
                     await freeLessonStartScreen(ctx, true);
                     break;
                 case 'confirmTariff':
-                    await paymentMethodsScreen(ctx, true);
+                    await confirmTariffHandler(ctx, true);
                     break;
                 case 'check_subscription':
                     await checkSubscriptionScreen(ctx, true);
                     break;
                 case 'free_lesson':
-                    await welcomeScreenHandler(ctx, true);
+                    await freeLessonScreen(ctx, true);
                     break;
                 case 'payment_methods':
                     await paymentMethodsScreen(ctx, true);
@@ -96,7 +98,11 @@ export const callbackQueryHandler = async (
                     await payCryptoPackagesScreen(ctx, true);
                     break;
                 case 'choose_crypto':
-                    await chooseCryptoForPayScreenHandler(ctx, {month: 1, isGift: false}, true);
+                    await chooseCryptoForPayScreenHandler(
+                        ctx,
+                        { month: 1, isGift: false },
+                        true,
+                    );
                     break;
                 case 'pay_card_scene':
                     await payCardPackagesScreen(ctx, true);
@@ -108,7 +114,7 @@ export const callbackQueryHandler = async (
 
         if (opts.message_id) {
             const command = data.command;
-            console.log(command)
+            console.log(command);
 
             // Back handler
             if (command === 'back') {
@@ -119,7 +125,7 @@ export const callbackQueryHandler = async (
             // ********* SCREENS HANDLERS *********
 
             // Start/back to main
-            if (command === "start") {
+            if (command === 'start') {
                 initNav();
                 ctx.session.navStack = [];
                 ctx.session.currentScreen = 'start';
@@ -130,26 +136,54 @@ export const callbackQueryHandler = async (
             //     await aboutScreenHandler(ctx, true);
             // }
 
-            if (command === "about_aviral") {
-                await navigateTo('about_aviral', async () => aboutAviralScreen(ctx, true));
+            if (command === 'about_aviral') {
+                await navigateTo('about_aviral', async () =>
+                    aboutAviralScreen(ctx, true),
+                );
             }
-            if (command === "aviral_more") {
-                await navigateTo('aviral_more', async () => aviralMoreScreen(ctx, true));
+            if (command === 'aviral_more') {
+                await navigateTo('aviral_more', async () =>
+                    aviralMoreScreen(ctx, true),
+                );
             }
 
             // Portfolio
-            if (command === "portfolio") {
-                await navigateTo('portfolio', async () => portfolioScreen(ctx, true));
+            if (command === 'portfolio') {
+                await navigateTo('portfolio', async () =>
+                    portfolioScreen(ctx, true),
+                );
             }
-            if (command === "case_1" || command === "case_2" || command === "case_3") {
+            if (
+                command === 'case_1' ||
+                command === 'case_2' ||
+                command === 'case_3'
+            ) {
                 initNav();
-                if (ctx.session.currentScreen) ctx.session.navStack.push(ctx.session.currentScreen);
+                if (ctx.session.currentScreen)
+                    ctx.session.navStack.push(ctx.session.currentScreen);
                 ctx.session.currentScreen = command;
-                const text = command === "case_1" ? "Кейс 1: скоро будут детали." : command === "case_2" ? "Кейс 2: скоро будут детали." : "Кейс 3: скоро будут детали.";
+                const text =
+                    command === 'case_1'
+                        ? 'Кейс 1: скоро будут детали.'
+                        : command === 'case_2'
+                          ? 'Кейс 2: скоро будут детали.'
+                          : 'Кейс 3: скоро будут детали.';
                 const reply_markup = {
                     inline_keyboard: [
-                        [{ text: "⏪ Вернуться назад", callback_data: JSON.stringify({ command: "back" }) }],
-                        [{ text: "❓ Задать вопрос", url: `https://t.me/${process.env.SUPPORT_USERNAME}` }],
+                        [
+                            {
+                                text: '⏪ Вернуться назад',
+                                callback_data: JSON.stringify({
+                                    command: 'back',
+                                }),
+                            },
+                        ],
+                        [
+                            {
+                                text: '❓ Задать вопрос',
+                                url: `https://t.me/${process.env.SUPPORT_USERNAME}`,
+                            },
+                        ],
                     ],
                 };
                 await ctx.telegram.editMessageText(
@@ -157,157 +191,269 @@ export const callbackQueryHandler = async (
                     ctx?.callbackQuery?.message?.message_id,
                     undefined,
                     text,
-                    { parse_mode: "HTML", disable_web_page_preview: true, reply_markup }
+                    {
+                        parse_mode: 'HTML',
+                        disable_web_page_preview: true,
+                        reply_markup,
+                    },
                 );
             }
 
             // Contacts
-            if (command === "contacts") {
-                await navigateTo('contacts', async () => contactsScreen(ctx, true));
+            if (command === 'contacts') {
+                await navigateTo('contacts', async () =>
+                    contactsScreen(ctx, true),
+                );
             }
 
             // Free lesson flow
-            if (command === "free_lesson_start") {
+            if (command === 'free_lesson_start') {
                 const chatId = process.env.PUBLIC_CHANNEL_ID;
                 const userId = ctx.from?.id;
                 if (!chatId || !userId) {
-                    await ctx.answerCbQuery('Ошибка проверки. Попробуйте позже.', { show_alert: false });
+                    await ctx.answerCbQuery(
+                        'Ошибка проверки. Попробуйте позже.',
+                        { show_alert: false },
+                    );
                     return;
                 }
                 const member = await ctx.telegram.getChatMember(chatId, userId);
                 const status = member?.status;
-                const isSubscribed = status === 'member' || status === 'administrator' || status === 'creator' || status === 'owner';
+                const isSubscribed =
+                    status === 'member' ||
+                    status === 'administrator' ||
+                    status === 'creator' ||
+                    status === 'owner';
                 if (isSubscribed) {
-                    await navigateTo('free_lesson', async () => freeLessonScreen(ctx, true));
+                    await navigateTo('free_lesson', async () =>
+                        freeLessonScreen(ctx, true),
+                    );
                 } else {
-                    await navigateTo('free_lesson_start', async () => freeLessonStartScreen(ctx, true));
+                    await navigateTo('free_lesson_start', async () =>
+                        freeLessonStartScreen(ctx, true),
+                    );
                 }
             }
-            if (command === "check_subscription") {
+            if (command === 'check_subscription') {
                 // Real subscription check before granting access to the free lesson
                 try {
                     const chatId = process.env.PUBLIC_CHANNEL_ID;
                     const userId = ctx.from?.id;
                     if (!chatId || !userId) {
-                        await ctx.answerCbQuery('Ошибка проверки. Попробуйте позже.', { show_alert: false });
+                        await ctx.answerCbQuery(
+                            'Ошибка проверки. Попробуйте позже.',
+                            { show_alert: false },
+                        );
                         return;
                     }
-                    const member = await ctx.telegram.getChatMember(chatId, userId);
+                    const member = await ctx.telegram.getChatMember(
+                        chatId,
+                        userId,
+                    );
                     const status = member?.status;
-                    const isSubscribed = status === 'member' || status === 'administrator' || status === 'creator' || status === 'owner';
+                    const isSubscribed =
+                        status === 'member' ||
+                        status === 'administrator' ||
+                        status === 'creator' ||
+                        status === 'owner';
                     if (isSubscribed) {
-                        await ctx.answerCbQuery('Подписка подтверждена! Открываю урок…', { show_alert: false });
-                        await navigateTo('free_lesson', async () => freeLessonScreen(ctx, true));
+                        await ctx.answerCbQuery(
+                            'Подписка подтверждена! Открываю урок…',
+                            { show_alert: false },
+                        );
+                        await navigateTo('free_lesson', async () =>
+                            freeLessonScreen(ctx, true),
+                        );
                     } else {
-                        await ctx.answerCbQuery('Вы не подписаны на канал. Подпишитесь и нажмите «✅ Подписался».', { show_alert: false });
+                        await ctx.answerCbQuery(
+                            'Вы не подписаны на канал. Подпишитесь и нажмите «✅ Подписался».',
+                            { show_alert: false },
+                        );
                     }
                 } catch (e) {
                     console.error('Subscription check error:', e);
-                    await ctx.answerCbQuery('Не удалось проверить подписку. Попробуйте позже.', { show_alert: false });
+                    await ctx.answerCbQuery(
+                        'Не удалось проверить подписку. Попробуйте позже.',
+                        { show_alert: false },
+                    );
                 }
             }
-            if (command === "free_lesson") {
+            if (command === 'free_lesson') {
                 // Guard direct access: verify subscription again
                 try {
                     const chatId = process.env.PUBLIC_CHANNEL_ID;
                     const userId = ctx.from?.id;
                     if (!chatId || !userId) {
-                        await ctx.answerCbQuery('Ошибка проверки. Попробуйте позже.', { show_alert: false });
+                        await ctx.answerCbQuery(
+                            'Ошибка проверки. Попробуйте позже.',
+                            { show_alert: false },
+                        );
                         return;
                     }
-                    const member = await ctx.telegram.getChatMember(chatId, userId);
+                    const member = await ctx.telegram.getChatMember(
+                        chatId,
+                        userId,
+                    );
                     const status = member?.status;
-                    const isSubscribed = status === 'member' || status === 'administrator' || status === 'creator' || status === 'owner';
+                    const isSubscribed =
+                        status === 'member' ||
+                        status === 'administrator' ||
+                        status === 'creator' ||
+                        status === 'owner';
                     if (isSubscribed) {
-                        await navigateTo('free_lesson', async () => freeLessonScreen(ctx, true));
+                        await navigateTo('free_lesson', async () =>
+                            freeLessonScreen(ctx, true),
+                        );
                     } else {
-                        await ctx.answerCbQuery('Сначала подпишитесь на канал, чтобы получить бесплатный урок.', { show_alert: false });
+                        await ctx.answerCbQuery(
+                            'Сначала подпишитесь на канал, чтобы получить бесплатный урок.',
+                            { show_alert: false },
+                        );
                         // Optionally show the start screen again
-                        await navigateTo('free_lesson_start', async () => freeLessonStartScreen(ctx, true));
+                        await navigateTo('free_lesson_start', async () =>
+                            freeLessonStartScreen(ctx, true),
+                        );
                     }
                 } catch (e) {
                     console.error('Subscription check error:', e);
-                    await ctx.answerCbQuery('Не удалось проверить подписку. Попробуйте позже.', { show_alert: false });
+                    await ctx.answerCbQuery(
+                        'Не удалось проверить подписку. Попробуйте позже.',
+                        { show_alert: false },
+                    );
                 }
             }
 
             // Payment methods and packages
-            if (command === "payment_methods") {
-                await navigateTo('payment_methods', async () => paymentMethodsScreen(ctx, true));
+            if (command === 'payment_methods') {
+                await navigateTo('payment_methods', async () =>
+                    paymentMethodsScreen(ctx, true),
+                );
             }
-            if (command === "pay_card") {
-                await navigateTo('pay_card', async () => payCardPackagesScreen(ctx, true));
+            if (command === 'pay_card') {
+                await navigateTo('pay_card', async () =>
+                    payCardPackagesScreen(ctx, true),
+                );
             }
-            if (command === "pay_crypto") {
-                await navigateTo('pay_crypto', async () => payCryptoPackagesScreen(ctx, true));
+            if (command === 'pay_crypto') {
+                await navigateTo('pay_crypto', async () =>
+                    payCryptoPackagesScreen(ctx, true),
+                );
             }
 
             // Package selections -> go into old payment flow
-            if (command === "order_card_start_confirm" || command === "order_card_pro_confirm" || command === "order_card_premium_confirm") {
+            if (
+                command === 'order_card_start_confirm' ||
+                command === 'order_card_pro_confirm' ||
+                command === 'order_card_premium_confirm'
+            ) {
                 initNav();
-                if (ctx.session.currentScreen) ctx.session.navStack.push(ctx.session.currentScreen);
+                if (ctx.session.currentScreen)
+                    ctx.session.navStack.push(ctx.session.currentScreen);
                 ctx.session.currentScreen = 'pay_card_scene';
 
                 const tariff = command.split('_')[2]; // start|pro|premium
-                await ctx.scene.enter("payByCardScene", { tariff, isGift: false });
+                await ctx.scene.enter('payByCardScene', {
+                    tariff,
+                    isGift: false,
+                });
             }
-            if (command === "order_crypto_start_confirm" || command === "order_crypto_pro_confirm" || command === "order_crypto_premium_confirm") {
+            if (
+                command === 'order_crypto_start_confirm' ||
+                command === 'order_crypto_pro_confirm' ||
+                command === 'order_crypto_premium_confirm'
+            ) {
                 initNav();
                 const tariff = command.split('_')[2];
                 ctx.session.chooseCryptoState = { tariff, isGift: false };
-                await navigateTo('choose_crypto', async () => chooseCryptoForPayScreenHandler(ctx, ctx.session.chooseCryptoState, true));
+                await navigateTo('choose_crypto', async () =>
+                    chooseCryptoForPayScreenHandler(
+                        ctx,
+                        ctx.session.chooseCryptoState,
+                        true,
+                    ),
+                );
             }
 
-            if (command === "order_card_start" || command === "order_card_pro" || command === "order_card_premium") {
+            if (
+                command === 'order_card_start' ||
+                command === 'order_card_pro' ||
+                command === 'order_card_premium'
+            ) {
                 initNav();
                 const tariff = command.split('_')[2];
                 ctx.session.chooseCryptoState = { tariff, isGift: false };
 
-                await navigateTo('confirmTariff', async () => confirmTariffHandler(ctx, command, ctx.session.chooseCryptoState, true));
+                await navigateTo('confirmTariff', async () =>
+                    confirmTariffHandler(
+                        ctx,
+                        command,
+                        ctx.session.chooseCryptoState,
+                        true,
+                    ),
+                );
             }
-            if (command === "order_crypto_start" || command === "order_crypto_pro" || command === "order_crypto_premium") {
+            if (
+                command === 'order_crypto_start' ||
+                command === 'order_crypto_pro' ||
+                command === 'order_crypto_premium'
+            ) {
                 initNav();
                 const tariff = command.split('_')[2];
                 ctx.session.chooseCryptoState = { tariff, isGift: false };
-                await navigateTo('confirmTariff', async () => confirmTariffHandler(ctx, command, ctx.session.chooseCryptoState, true));
+                await navigateTo('confirmTariff', async () =>
+                    confirmTariffHandler(
+                        ctx,
+                        command,
+                        ctx.session.chooseCryptoState,
+                        true,
+                    ),
+                );
             }
 
-            if (command.includes("choose_chain_crypto_")) {
+            if (command.includes('choose_chain_crypto_')) {
                 let isGift;
                 let symbol;
                 let tariff;
 
-                if (command.split("_")[3] === 'gift') {
-                    symbol = command.split("_")[4];
-                    tariff = command.split("_")[5];
+                if (command.split('_')[3] === 'gift') {
+                    symbol = command.split('_')[4];
+                    tariff = command.split('_')[5];
                     isGift = true;
                 } else {
-                    symbol = command.split("_")[3];
-                    tariff = command.split("_")[4];
+                    symbol = command.split('_')[3];
+                    tariff = command.split('_')[4];
                     isGift = false;
                 }
 
                 initNav();
                 ctx.session.chooseChainState = { symbol, tariff, isGift };
-                await navigateTo('choose_chain', async () => chooseChainForPayScreenHandler(ctx, ctx.session.chooseChainState, true));
+                await navigateTo('choose_chain', async () =>
+                    chooseChainForPayScreenHandler(
+                        ctx,
+                        ctx.session.chooseChainState,
+                        true,
+                    ),
+                );
             }
 
-            if (command === "check_is_payment_completed") {
-                await ctx.answerCbQuery(ERROR_UNSUCCESSFULL_CHECK, {show_alert: false});
+            if (command === 'check_is_payment_completed') {
+                await ctx.answerCbQuery(ERROR_UNSUCCESSFULL_CHECK, {
+                    show_alert: false,
+                });
             }
 
-            if (command.includes("pay_crypto_")) {
+            if (command.includes('pay_crypto_')) {
                 let isGift;
                 let symbol;
                 let tariff;
 
-                if (command.split("_")[2] === 'gift') {
-                    symbol = command.split("_")[3];
-                    tariff = command.split("_")[4];
+                if (command.split('_')[2] === 'gift') {
+                    symbol = command.split('_')[3];
+                    tariff = command.split('_')[4];
                     isGift = true;
                 } else {
-                    symbol = command.split("_")[2];
-                    tariff = command.split("_")[3];
+                    symbol = command.split('_')[2];
+                    tariff = command.split('_')[3];
                     isGift = false;
                 }
 
@@ -317,55 +463,79 @@ export const callbackQueryHandler = async (
                 const user = await new UserService().getUser(ctx.from.id);
 
                 if (user.subscriptionStatus === 'active') {
-                    await ctx.telegram.sendMessage(ctx?.chat?.id, `У вас уже есть подписка`, {
-                        parse_mode: "HTML",
-                        disable_web_page_preview: true,
-                    });
+                    await ctx.telegram.sendMessage(
+                        ctx?.chat?.id,
+                        `У вас уже есть подписка`,
+                        {
+                            parse_mode: 'HTML',
+                            disable_web_page_preview: true,
+                        },
+                    );
                 } else {
-                    const order = await new CryptoPaymentApiService().createPayment({
-                        userId: ctx.from.id,
-                        amount: amountUSDT,
-                        payCurrency: symbol,
-                        tariff,
-                    }, isGift);
+                    const order =
+                        await new CryptoPaymentApiService().createPayment(
+                            {
+                                userId: ctx.from.id,
+                                amount: amountUSDT,
+                                payCurrency: symbol,
+                                tariff,
+                            },
+                            isGift,
+                        );
 
-                    console.log(order)
+                    console.log(order);
 
                     if (order?.error !== undefined) {
-                        await ctx.telegram.sendMessage(ctx?.chat?.id, order.error, {
-                            parse_mode: "HTML",
-                            disable_web_page_preview: true,
-                        });
+                        await ctx.telegram.sendMessage(
+                            ctx?.chat?.id,
+                            order.error,
+                            {
+                                parse_mode: 'HTML',
+                                disable_web_page_preview: true,
+                            },
+                        );
                     } else {
                         initNav();
-                        if (ctx.session.currentScreen) ctx.session.navStack.push(ctx.session.currentScreen);
+                        if (ctx.session.currentScreen)
+                            ctx.session.navStack.push(
+                                ctx.session.currentScreen,
+                            );
                         ctx.session.currentScreen = 'order_crypto_payment';
 
-                        const sentMessage = await orderCryptoPaymentScreenHandler(ctx, {order, tariff, isGift}, true);
+                        const sentMessage =
+                            await orderCryptoPaymentScreenHandler(
+                                ctx,
+                                { order, tariff, isGift },
+                                true,
+                            );
 
                         order.msgId = sentMessage.message_id;
 
-                        await new OrderService().updateOrder(order.orderId, order);
+                        await new OrderService().updateOrder(
+                            order.orderId,
+                            order,
+                        );
                     }
                 }
             }
 
             // ****************************************************************************************
 
-
-
-
             // ********* CARD PAY **********
 
-            const regexCard = /^pay_(russian|world)_card(_gift)?_(start|pro|premium)$/;
+            const regexCard =
+                /^pay_(russian|world)_card(_gift)?_(start|pro|premium)$/;
 
             if (command.match(regexCard)) {
-                console.log(ctx.scene.session.email)
+                console.log(ctx.scene.session.email);
                 let isGift;
-                const bankType = command.split("_")[1] === 'russian' ? 'BANK131' : 'UNLIMINT';
-                const tariff = command.split("_").pop();
+                const bankType =
+                    command.split('_')[1] === 'russian'
+                        ? 'BANK131'
+                        : 'UNLIMINT';
+                const tariff = command.split('_').pop();
 
-                isGift = command.split("_")[3] === 'gift';
+                isGift = command.split('_')[3] === 'gift';
 
                 const t = GLOBAL_CONFIG.tariffs[tariff];
                 const amount = t?.usdt ?? 0;
@@ -377,10 +547,10 @@ export const callbackQueryHandler = async (
                         undefined,
                         'Ошибка в получении суммы заказа Error: #clb351',
                         {
-                            parse_mode: "HTML",
+                            parse_mode: 'HTML',
                             disable_web_page_preview: true,
-                        }
-                    )
+                        },
+                    );
 
                     await ctx.scene.leave();
                 }
@@ -388,56 +558,86 @@ export const callbackQueryHandler = async (
                 const user = await new UserService().getUser(ctx.from.id);
 
                 if (user.subscriptionStatus === 'active') {
-                    await ctx.telegram.sendMessage(ctx?.chat?.id, `У вас уже есть подписка`, {
-                        parse_mode: "HTML",
-                        disable_web_page_preview: true,
-                    });
+                    await ctx.telegram.sendMessage(
+                        ctx?.chat?.id,
+                        `У вас уже есть подписка`,
+                        {
+                            parse_mode: 'HTML',
+                            disable_web_page_preview: true,
+                        },
+                    );
                 } else {
-
-                    const order = await new PaymentFiatServiceClass().createNewOrder({
-                        userId: ctx.from.id,
-                        email: ctx.scene.session.email,
-                        amount,
-                        bank: bankType,
-                        tariff,
-                    }, isGift);
+                    const order =
+                        await new PaymentFiatServiceClass().createNewOrder(
+                            {
+                                userId: ctx.from.id,
+                                email: ctx.scene.session.email,
+                                amount,
+                                bank: bankType,
+                                tariff,
+                            },
+                            isGift,
+                        );
 
                     if (order?.error !== undefined) {
                         await ctx.telegram.sendMessage(
                             ctx?.chat?.id,
                             order.error,
                             {
-                                parse_mode: "HTML",
+                                parse_mode: 'HTML',
                                 disable_web_page_preview: true,
-                            }
-                        )
+                            },
+                        );
 
                         await ctx.scene.leave();
                     } else {
                         const buttonsWithLink = [
-                            [{text: "✅ Оплатить", command: "payment_link"}],
-                            [{text: "📝 Договор-оферта", command: "send_file_offer_agreement"}],
-                            [{text: "📝 Политика конфиденциальности", command: "send_file_personal_policy"}],
-                            [{text: '❓ Задать вопрос', command: 'ask_question'}],
-                            [{text: "⏪ Вернуться назад", command: 'back'}],
+                            [{ text: '✅ Оплатить', command: 'payment_link' }],
+                            [
+                                {
+                                    text: '📝 Договор-оферта',
+                                    command: 'send_file_offer_agreement',
+                                },
+                            ],
+                            [
+                                {
+                                    text: '📝 Политика конфиденциальности',
+                                    command: 'send_file_personal_policy',
+                                },
+                            ],
+                            [
+                                {
+                                    text: '❓ Задать вопрос',
+                                    command: 'ask_question',
+                                },
+                            ],
+                            [{ text: '⏪ Вернуться назад', command: 'back' }],
                         ];
 
                         const reply_markup = {
                             inline_keyboard: buttonsWithLink.map((row) =>
                                 row.map((item) => {
                                     if (item.command === 'ask_question') {
-                                        return {text: item.text, url: `https://t.me/${process.env.SUPPORT_USERNAME}`};
+                                        return {
+                                            text: item.text,
+                                            url: `https://t.me/${process.env.SUPPORT_USERNAME}`,
+                                        };
                                     }
 
                                     if (item.command === 'payment_link') {
-                                        return {text: item.text, url: order.output.paymentUrl};
+                                        return {
+                                            text: item.text,
+                                            url: order.output.paymentUrl,
+                                        };
                                     }
 
                                     return {
                                         text: item.text,
-                                        callback_data: JSON.stringify({command: item.command}),
+                                        callback_data: JSON.stringify({
+                                            command: item.command,
+                                        }),
                                     };
-                                })
+                                }),
                             ),
                         };
 
@@ -445,17 +645,23 @@ export const callbackQueryHandler = async (
                             ctx?.chat?.id,
                             ctx?.callbackQuery?.message?.message_id,
                             undefined,
-                            PAY_BY_CARD_GIVE_LINK(tariff, command.split("_")[1] === 'russian'),
+                            PAY_BY_CARD_GIVE_LINK(
+                                tariff,
+                                command.split('_')[1] === 'russian',
+                            ),
                             {
-                                parse_mode: "HTML",
+                                parse_mode: 'HTML',
                                 disable_web_page_preview: true,
                                 reply_markup,
-                            }
-                        )
+                            },
+                        );
 
                         order.msgId = sentMessage.message_id;
 
-                        await new OrderService().updateOrder(order.orderId, order);
+                        await new OrderService().updateOrder(
+                            order.orderId,
+                            order,
+                        );
 
                         await ctx.scene.leave();
                     }
@@ -466,14 +672,17 @@ export const callbackQueryHandler = async (
 
             // ********* SEND FILE *********
 
-            if (command.includes("send_file_")) {
-
+            if (command.includes('send_file_')) {
                 if (command === 'send_file_offer_agreement') {
-                    await ctx.replyWithDocument({ source: './src/data/Terms of use iaifun.pdf' });
+                    await ctx.replyWithDocument({
+                        source: './src/data/Terms of use iaifun.pdf',
+                    });
                 }
 
                 if (command === 'send_file_personal_policy') {
-                    await ctx.sendDocument({ source: './src/data/Privacy Policy iaifun.pdf' });
+                    await ctx.sendDocument({
+                        source: './src/data/Privacy Policy iaifun.pdf',
+                    });
                 }
             }
 
@@ -497,8 +706,7 @@ export const callbackQueryHandler = async (
             //     await welcomeScreenHandler(ctx, false, false);
             // }
 
-
             // ****************************************************************************************
         }
     }
-}
+};
