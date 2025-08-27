@@ -1,14 +1,7 @@
 import { welcomeScreenHandler } from '../screens/welcome.screen.js';
 import { chooseCryptoForPayScreenHandler } from '../screens/chooseCrypto.screen.js';
-import { CryptoPaymentApiService } from '../services/PaymentApi.service.js';
-import {
-    ERROR_UNSUCCESSFULL_CHECK,
-    GLOBAL_CONFIG,
-    PAY_BY_CARD_GIVE_LINK,
-} from '../config.js';
+import { ERROR_UNSUCCESSFULL_CHECK } from '../config.js';
 import { chooseChainForPayScreenHandler } from '../screens/chooseChain.screen.js';
-import { PaymentFiatServiceClass } from '../services/PaymentFiat.service.js';
-import { OrderService } from '../services/Order.service.js';
 import { freeLessonStartScreen } from '../screens/freeLessonStart.screen.js';
 import { checkSubscriptionScreen } from '../screens/checkSubscription.screen.js';
 import { freeLessonScreen } from '../screens/freeLesson.screen.js';
@@ -19,9 +12,9 @@ import { aboutAviralScreen } from '../screens/aboutAviral.screen.js';
 import { aviralMoreScreen } from '../screens/aviralMore.screen.js';
 import { portfolioScreen } from '../screens/portfolio.screen.js';
 import { contactsScreen } from '../screens/contacts.screen.js';
-import { orderCryptoPaymentScreenHandler } from '../screens/orderCryptoPayment.screen.js';
-import { UserService } from '../services/User.service.js';
 import { confirmTariffHandler } from '../screens/confirmTariff.screen.js';
+import { payCryptoFinalScreen } from '../screens/payCryptoFinal.screen.js';
+import { payCardFinalScreen } from '../screens/payCardFinal.screen.js';
 
 export const callbackQueryHandler = async (ctx) => {
     const { callbackQuery, chat } = ctx;
@@ -443,80 +436,10 @@ export const callbackQueryHandler = async (ctx) => {
             }
 
             if (command.includes('pay_crypto_')) {
-                let isGift;
-                let symbol;
-                let tariff;
-
-                if (command.split('_')[2] === 'gift') {
-                    symbol = command.split('_')[3];
-                    tariff = command.split('_')[4];
-                    isGift = true;
-                } else {
-                    symbol = command.split('_')[2];
-                    tariff = command.split('_')[3];
-                    isGift = false;
-                }
-
-                const t = GLOBAL_CONFIG.tariffs[tariff];
-                const amountUSDT = t?.usdt ?? 0;
-
-                const user = await new UserService().getUser(ctx.from.id);
-
-                if (user.subscriptionStatus === 'active') {
-                    await ctx.telegram.sendMessage(
-                        ctx?.chat?.id,
-                        `У вас уже есть подписка`,
-                        {
-                            parse_mode: 'HTML',
-                            disable_web_page_preview: true,
-                        },
-                    );
-                } else {
-                    const order =
-                        await new CryptoPaymentApiService().createPayment(
-                            {
-                                userId: ctx.from.id,
-                                amount: amountUSDT,
-                                payCurrency: symbol,
-                                tariff,
-                            },
-                            isGift,
-                        );
-
-                    console.log(order);
-
-                    if (order?.error !== undefined) {
-                        await ctx.telegram.sendMessage(
-                            ctx?.chat?.id,
-                            order.error,
-                            {
-                                parse_mode: 'HTML',
-                                disable_web_page_preview: true,
-                            },
-                        );
-                    } else {
-                        initNav();
-                        if (ctx.session.currentScreen)
-                            ctx.session.navStack.push(
-                                ctx.session.currentScreen,
-                            );
-                        ctx.session.currentScreen = 'order_crypto_payment';
-
-                        const sentMessage =
-                            await orderCryptoPaymentScreenHandler(
-                                ctx,
-                                { order, tariff, isGift },
-                                true,
-                            );
-
-                        order.msgId = sentMessage.message_id;
-
-                        await new OrderService().updateOrder(
-                            order.orderId,
-                            order,
-                        );
-                    }
-                }
+                initNav();
+                await navigateTo('pay_crypto_final', async () =>
+                    payCryptoFinalScreen(ctx, command),
+                );
             }
 
             // ****************************************************************************************
@@ -527,145 +450,10 @@ export const callbackQueryHandler = async (ctx) => {
                 /^pay_(russian|world)_card(_gift)?_(start|pro|premium)$/;
 
             if (command.match(regexCard)) {
-                console.log(ctx.scene.session.email);
-                let isGift;
-                const bankType =
-                    command.split('_')[1] === 'russian'
-                        ? 'BANK131'
-                        : 'UNLIMINT';
-                const tariff = command.split('_').pop();
-
-                isGift = command.split('_')[3] === 'gift';
-
-                const t = GLOBAL_CONFIG.tariffs[tariff];
-                const amount = t?.usdt ?? 0;
-
-                if (amount === 0) {
-                    await ctx.telegram.editMessageText(
-                        ctx?.chat?.id,
-                        ctx?.callbackQuery?.message?.message_id,
-                        undefined,
-                        'Ошибка в получении суммы заказа Error: #clb351',
-                        {
-                            parse_mode: 'HTML',
-                            disable_web_page_preview: true,
-                        },
-                    );
-
-                    await ctx.scene.leave();
-                }
-
-                const user = await new UserService().getUser(ctx.from.id);
-
-                if (user.subscriptionStatus === 'active') {
-                    await ctx.telegram.sendMessage(
-                        ctx?.chat?.id,
-                        `У вас уже есть подписка`,
-                        {
-                            parse_mode: 'HTML',
-                            disable_web_page_preview: true,
-                        },
-                    );
-                } else {
-                    const order =
-                        await new PaymentFiatServiceClass().createNewOrder(
-                            {
-                                userId: ctx.from.id,
-                                email: ctx.scene.session.email,
-                                amount,
-                                bank: bankType,
-                                tariff,
-                            },
-                            isGift,
-                        );
-
-                    if (order?.error !== undefined) {
-                        await ctx.telegram.sendMessage(
-                            ctx?.chat?.id,
-                            order.error,
-                            {
-                                parse_mode: 'HTML',
-                                disable_web_page_preview: true,
-                            },
-                        );
-
-                        await ctx.scene.leave();
-                    } else {
-                        const buttonsWithLink = [
-                            [{ text: '✅ Оплатить', command: 'payment_link' }],
-                            [
-                                {
-                                    text: '📝 Договор-оферта',
-                                    command: 'send_file_offer_agreement',
-                                },
-                            ],
-                            [
-                                {
-                                    text: '📝 Политика конфиденциальности',
-                                    command: 'send_file_personal_policy',
-                                },
-                            ],
-                            [
-                                {
-                                    text: '❓ Задать вопрос',
-                                    command: 'ask_question',
-                                },
-                            ],
-                            [{ text: '⏪ Вернуться назад', command: 'back' }],
-                        ];
-
-                        const reply_markup = {
-                            inline_keyboard: buttonsWithLink.map((row) =>
-                                row.map((item) => {
-                                    if (item.command === 'ask_question') {
-                                        return {
-                                            text: item.text,
-                                            url: `https://t.me/${process.env.SUPPORT_USERNAME}`,
-                                        };
-                                    }
-
-                                    if (item.command === 'payment_link') {
-                                        return {
-                                            text: item.text,
-                                            url: order.output.paymentUrl,
-                                        };
-                                    }
-
-                                    return {
-                                        text: item.text,
-                                        callback_data: JSON.stringify({
-                                            command: item.command,
-                                        }),
-                                    };
-                                }),
-                            ),
-                        };
-
-                        const sentMessage = await ctx.telegram.editMessageText(
-                            ctx?.chat?.id,
-                            ctx?.callbackQuery?.message?.message_id,
-                            undefined,
-                            PAY_BY_CARD_GIVE_LINK(
-                                tariff,
-                                command.split('_')[1] === 'russian',
-                            ),
-                            {
-                                parse_mode: 'HTML',
-                                disable_web_page_preview: true,
-                                reply_markup,
-                            },
-                        );
-
-                        order.msgId = sentMessage.message_id;
-
-                        await new OrderService().updateOrder(
-                            order.orderId,
-                            order,
-                        );
-
-                        await ctx.scene.leave();
-                    }
-                }
+                initNav();
+                await navigateTo('pay_card_final', async () =>
+                    payCardFinalScreen(ctx, command),
+                );
             }
 
             // ****************************************************************************************
