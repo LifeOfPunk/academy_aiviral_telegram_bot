@@ -58,7 +58,7 @@ export const orderCryptoPaymentScreenHandler = async (
             initialState.order.output.destinationTag,
         );
 
-        await sendOrEdit(ctx, {
+        return await sendOrEdit(ctx, {
             editMessage,
             text: textOrder,
             reply_markup,

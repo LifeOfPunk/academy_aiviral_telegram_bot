@@ -67,7 +67,7 @@ export const sendOrEdit = async (
         const absPath = resolveFirstExisting(photoCandidates);
 
         if (absPath) {
-            await ctx.telegram.editMessageMedia(
+            return await ctx.telegram.editMessageMedia(
                 chatId,
                 messageId,
                 undefined,
@@ -79,7 +79,6 @@ export const sendOrEdit = async (
                 },
                 { reply_markup },
             );
-            return;
         }
 
         if (isPhoto) {
@@ -94,11 +93,17 @@ export const sendOrEdit = async (
             });
         }
 
-        await ctx.telegram.editMessageText(chatId, messageId, undefined, text, {
-            parse_mode,
-            disable_web_page_preview,
-            reply_markup,
-        });
+        return await ctx.telegram.editMessageText(
+            chatId,
+            messageId,
+            undefined,
+            text,
+            {
+                parse_mode,
+                disable_web_page_preview,
+                reply_markup,
+            },
+        );
     } catch (e) {
         console.error('sendOrEdit error:', e?.message || e);
     }

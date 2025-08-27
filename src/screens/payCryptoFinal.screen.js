@@ -56,7 +56,7 @@ export const payCryptoFinalScreen = async (ctx, command) => {
                 true,
             );
 
-            order.msgId = sentMessage.message_id;
+            order.msgId = sentMessage?.message_id;
 
             await new OrderService().updateOrder(order.orderId, order);
         }
