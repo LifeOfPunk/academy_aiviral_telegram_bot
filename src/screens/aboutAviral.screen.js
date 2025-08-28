@@ -5,7 +5,7 @@ const keyboard = [
     [{ text: '📖 Подробнее об aiVIRAL', command: 'aviral_more' }],
     [{ text: '📂 Примеры работ', command: 'portfolio' }],
     [{ text: '🤠 FAQ', command: 'faq' }],
-    [{ text: '❓ Задать вопрос', command: 'ask_question' }],
+    [{ text: '❓ Обратная связь', command: 'faq' }],
     [{ text: '⏪ Вернуться назад', command: 'back' }],
 ];
 
@@ -15,12 +15,6 @@ export const aboutAviralScreen = async (ctx, editMessage) => {
     const reply_markup = {
         inline_keyboard: keyboard.map((row) =>
             row.map((item) => {
-                if (item.command === 'ask_question') {
-                    return {
-                        text: item.text,
-                        url: `https://t.me/${process.env.SUPPORT_USERNAME}`,
-                    };
-                }
                 return {
                     text: item.text,
                     callback_data: JSON.stringify({ command: item.command }),
@@ -28,8 +22,6 @@ export const aboutAviralScreen = async (ctx, editMessage) => {
             }),
         ),
     };
-
-    if (!ctx?.chat?.id) return;
 
     await sendOrEdit(ctx, {
         editMessage,

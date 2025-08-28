@@ -21,8 +21,8 @@ export const confirmTariffHandler = async (
             ],
             [
                 {
-                    text: `❓ Задать вопрос`,
-                    url: `https://t.me/${process.env.SUPPORT_USERNAME}`,
+                    text: `❓ Обратная связь`,
+                    callback_data: JSON.stringify({ command: `faq` }),
                 },
             ],
             [

@@ -76,8 +76,8 @@ export const payCardFinalScreen = async (ctx, command) => {
                 ],
                 [
                     {
-                        text: '❓ Задать вопрос',
-                        command: 'ask_question',
+                        text: '❓Обратная связь',
+                        command: 'faq',
                     },
                 ],
                 [{ text: '⏪ Вернуться назад', command: 'back' }],
@@ -86,13 +86,6 @@ export const payCardFinalScreen = async (ctx, command) => {
             const reply_markup = {
                 inline_keyboard: buttonsWithLink.map((row) =>
                     row.map((item) => {
-                        if (item.command === 'ask_question') {
-                            return {
-                                text: item.text,
-                                url: `https://t.me/${process.env.SUPPORT_USERNAME}`,
-                            };
-                        }
-
                         if (item.command === 'payment_link') {
                             return {
                                 text: item.text,

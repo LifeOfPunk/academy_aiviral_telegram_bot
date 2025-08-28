@@ -3,9 +3,21 @@ import { sendOrEdit } from '../utils/media.js';
 
 const welcomeUserKeyboardList = [
     [{ text: '📚 Получить бесплатный урок', command: 'free_lesson_start' }],
+    [
+        {
+            text: '🎁 Получить 10 фото промптов ChatGPT',
+            command: 'free_prompts_start',
+        },
+    ],
+    [
+        {
+            text: '😎 Топ 10 бесплатных нейронок 2025 года',
+            command: 'free_ai_start',
+        },
+    ],
     [{ text: '🎓 Купить доступ в академию', command: 'payment_methods' }],
     [{ text: 'ℹ️ Узнать больше о академии', command: 'about_aviral' }],
-    [{ text: '❓ Задать вопрос', command: 'ask_question' }],
+    [{ text: '❓ Обратная связь', command: 'faq' }],
 ];
 
 // const userSubMenu = { text: '📚 Subscriber menu', callback_data: JSON.stringify({command: "subscriber_menu"}) };
@@ -14,13 +26,6 @@ export const welcomeScreenHandler = async (ctx, editMessage) => {
     const reply_markup = {
         inline_keyboard: welcomeUserKeyboardList.map((rowItem) =>
             rowItem.map((item) => {
-                if (item.command === 'ask_question') {
-                    return {
-                        text: item.text,
-                        url: `https://t.me/${process.env.SUPPORT_USERNAME}`,
-                    };
-                }
-
                 return {
                     text: item.text,
                     callback_data: JSON.stringify({

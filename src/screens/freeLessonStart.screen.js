@@ -1,29 +1,32 @@
 import 'dotenv/config';
 import { sendOrEdit } from '../utils/media.js';
 
-const keyboard = [
-    [{ text: '✅ Подписался', command: 'check_subscription' }],
-    [{ text: '⏪ Вернуться назад', command: 'back' }],
-];
+const channelUrl = process.env.PUBLIC_CHANNEL_URL;
+
+const reply_markup = {
+    inline_keyboard: [
+        [{ text: '✅ Подписаться', url: channelUrl }],
+        [
+            {
+                text: '🔄 Проверить подписку',
+                callback_data: JSON.stringify({
+                    command: 'check_subscription_free_lesson',
+                }),
+            },
+        ],
+        [
+            {
+                text: '⏪ Вернуться назад',
+                callback_data: JSON.stringify({ command: 'back' }),
+            },
+        ],
+    ],
+};
 
 export const freeLessonStartScreen = async (ctx, editMessage) => {
-    const channelUrl = process.env.PUBLIC_CHANNEL_URL;
     const message = `Хочешь получить бесплатный урок? Подпишись на Telegram-канал ниже.
   
-  Подпишись на наш Telegram-канал, чтобы не пропустить ценную информацию о рынке ИИ.
-  
-  Канал: ${channelUrl}`;
-
-    const reply_markup = {
-        inline_keyboard: keyboard.map((row) =>
-            row.map((item) => ({
-                text: item.text,
-                callback_data: JSON.stringify({ command: item.command }),
-            })),
-        ),
-    };
-
-    if (!ctx?.chat?.id) return;
+Подпишись на наш Telegram-канал, чтобы не пропустить ценную информацию о рынке ИИ.`;
 
     await sendOrEdit(ctx, {
         editMessage,

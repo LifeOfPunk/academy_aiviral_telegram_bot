@@ -1,39 +1,38 @@
 import 'dotenv/config';
-import { sendOrEdit } from '../utils/media.js';
+import { existsSync } from 'fs';
 
-const keyboard = [
-    [{ text: '❓ Задать вопрос', command: 'ask_question' }],
-    [{ text: '⏪ Вернуться назад', command: 'back' }],
-];
+const reply_markup = {
+    inline_keyboard: [
+        [
+            {
+                text: '❓ Задать вопрос менеджеру',
+                url: `https://t.me/${process.env.SUPPORT_USERNAME}`,
+            },
+        ],
+        [
+            {
+                text: `⏪ Вернуться назад`,
+                callback_data: JSON.stringify({ command: `back` }),
+            },
+        ],
+    ],
+};
 
-export const faqScreen = async (ctx, editMessage) => {
-    const message = 'FAQ TEXT';
+export const faqScreen = async (ctx) => {
+    const message = `Самые часто задаваемые вопросы FAQ1
+Самые часто задаваемые вопросы FAQ2
+Самые часто задаваемые вопросы FAQ3`;
 
-    const reply_markup = {
-        inline_keyboard: keyboard.map((row) =>
-            row.map((item) => {
-                if (item.command === 'ask_question') {
-                    return {
-                        text: item.text,
-                        url: `https://t.me/${process.env.SUPPORT_USERNAME}`,
-                    };
-                }
-                return {
-                    text: item.text,
-                    callback_data: JSON.stringify({ command: item.command }),
-                };
-            }),
-        ),
-    };
+    const media = 'src/data/faq.jpg';
 
-    if (!ctx?.chat?.id) return;
+    const hasMedia = existsSync(media);
 
-    await sendOrEdit(ctx, {
-        editMessage,
-        text: message,
-        reply_markup,
-        photoCandidates: ['src/data/faq.jpg'],
+    if (hasMedia) {
+        await ctx.telegram.sendPhoto(ctx.chat.id, { source: media });
+    }
+
+    await ctx.telegram.sendMessage(ctx.chat.id, message, {
         parse_mode: 'HTML',
-        disable_web_page_preview: true,
+        reply_markup,
     });
 };

@@ -23,7 +23,7 @@ export const payCryptoPackagesScreen = async (ctx, editMessage) => {
                 command: 'order_crypto_premium',
             },
         ],
-        [{ text: '❓ Задать вопрос', command: 'ask_question' }],
+        [{ text: '❓Обратная связь', command: 'faq' }],
         [{ text: '⏪ Вернуться назад', command: 'back' }],
     ];
 
@@ -35,12 +35,6 @@ ${t.premium.emoji} ${t.premium.title}: ${t.premium.usdt}$ (${t.premium.rub} ₽)
     const reply_markup = {
         inline_keyboard: keyboard.map((row) =>
             row.map((item) => {
-                if (item.command === 'ask_question') {
-                    return {
-                        text: item.text,
-                        url: `https://t.me/${process.env.SUPPORT_USERNAME}`,
-                    };
-                }
                 return {
                     text: item.text,
                     callback_data: JSON.stringify({ command: item.command }),

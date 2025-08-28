@@ -3,7 +3,6 @@ import { chooseCryptoForPayScreenHandler } from '../screens/chooseCrypto.screen.
 import { ERROR_UNSUCCESSFULL_CHECK } from '../config.js';
 import { chooseChainForPayScreenHandler } from '../screens/chooseChain.screen.js';
 import { freeLessonStartScreen } from '../screens/freeLessonStart.screen.js';
-import { checkSubscriptionScreen } from '../screens/checkSubscription.screen.js';
 import { freeLessonScreen } from '../screens/freeLesson.screen.js';
 import { paymentMethodsScreen } from '../screens/paymentMethods.screen.js';
 import { payCardPackagesScreen } from '../screens/payCardPackages.screen.js';
@@ -16,6 +15,11 @@ import { confirmTariffHandler } from '../screens/confirmTariff.screen.js';
 import { payCryptoFinalScreen } from '../screens/payCryptoFinal.screen.js';
 import { payCardFinalScreen } from '../screens/payCardFinal.screen.js';
 import { faqScreen } from '../screens/faq.screen.js';
+import { checkIsSubscribed } from '../utils/checkSub.js';
+import { freePromptsStartScreen } from '../screens/freePromptsStart.screen.js';
+import { freePromptsScreen } from '../screens/freePrompts.screen.js';
+import { freeAiStartScreen } from '../screens/freAiStart.screen.js';
+import { freeAiScreen } from '../screens/freeAi.screen.js';
 
 export const callbackQueryHandler = async (ctx) => {
     const { callbackQuery, chat } = ctx;
@@ -82,7 +86,7 @@ export const callbackQueryHandler = async (ctx) => {
                     await aviralMoreScreen(ctx, true);
                     break;
                 case 'portfolio':
-                    await portfolioScreen(ctx, true);
+                    await portfolioScreen(ctx);
                     break;
                 case 'contacts':
                     await contactsScreen(ctx, true);
@@ -90,11 +94,20 @@ export const callbackQueryHandler = async (ctx) => {
                 case 'free_lesson_start':
                     await freeLessonStartScreen(ctx, true);
                     break;
-                case 'check_subscription':
-                    await checkSubscriptionScreen(ctx, true);
-                    break;
                 case 'free_lesson':
                     await freeLessonScreen(ctx, true);
+                    break;
+                case 'free_prompts_start':
+                    await freePromptsStartScreen(ctx, true);
+                    break;
+                case 'free_prompts':
+                    await freePromptsScreen(ctx, true);
+                    break;
+                case 'free_ai':
+                    await freeAiScreen(ctx, true);
+                    break;
+                case 'free_ai_start':
+                    await freeAiStartScreen(ctx, true);
                     break;
                 case 'payment_methods':
                     await paymentMethodsScreen(ctx, true);
@@ -103,7 +116,7 @@ export const callbackQueryHandler = async (ctx) => {
                     await payCardPackagesScreen(ctx, true);
                     break;
                 case 'faq':
-                    await faqScreen(ctx, true);
+                    await faqScreen(ctx);
                     break;
                 case 'pay_crypto':
                     await payCryptoPackagesScreen(ctx, true);
@@ -156,7 +169,7 @@ export const callbackQueryHandler = async (ctx) => {
                 );
             }
             if (command === 'faq') {
-                await navigateTo('faq', async () => await faqScreen(ctx, true));
+                await navigateTo('faq', async () => await faqScreen(ctx));
             }
             if (command === 'aviral_more') {
                 await navigateTo('aviral_more', async () =>
@@ -166,9 +179,7 @@ export const callbackQueryHandler = async (ctx) => {
 
             // Portfolio
             if (command === 'portfolio') {
-                await navigateTo('portfolio', async () =>
-                    portfolioScreen(ctx, true),
-                );
+                await navigateTo('portfolio', async () => portfolioScreen(ctx));
             }
             if (
                 command === 'case_1' ||
@@ -189,16 +200,18 @@ export const callbackQueryHandler = async (ctx) => {
                     inline_keyboard: [
                         [
                             {
-                                text: '⏪ Вернуться назад',
+                                text: '❓Обратная связь',
                                 callback_data: JSON.stringify({
-                                    command: 'back',
+                                    command: 'faq',
                                 }),
                             },
                         ],
                         [
                             {
-                                text: '❓ Задать вопрос',
-                                url: `https://t.me/${process.env.SUPPORT_USERNAME}`,
+                                text: '⏪ Вернуться назад',
+                                callback_data: JSON.stringify({
+                                    command: 'back',
+                                }),
                             },
                         ],
                     ],
@@ -225,22 +238,8 @@ export const callbackQueryHandler = async (ctx) => {
 
             // Free lesson flow
             if (command === 'free_lesson_start') {
-                const chatId = process.env.PUBLIC_CHANNEL_ID;
-                const userId = ctx.from?.id;
-                if (!chatId || !userId) {
-                    await ctx.answerCbQuery(
-                        'Ошибка проверки. Попробуйте позже.',
-                        { show_alert: false },
-                    );
-                    return;
-                }
-                const member = await ctx.telegram.getChatMember(chatId, userId);
-                const status = member?.status;
-                const isSubscribed =
-                    status === 'member' ||
-                    status === 'administrator' ||
-                    status === 'creator' ||
-                    status === 'owner';
+                const isSubscribed = await checkIsSubscribed(ctx);
+
                 if (isSubscribed) {
                     await navigateTo('free_lesson', async () =>
                         freeLessonScreen(ctx, true),
@@ -251,28 +250,11 @@ export const callbackQueryHandler = async (ctx) => {
                     );
                 }
             }
-            if (command === 'check_subscription') {
-                // Real subscription check before granting access to the free lesson
+
+            if (command === 'check_subscription_free_lesson') {
                 try {
-                    const chatId = process.env.PUBLIC_CHANNEL_ID;
-                    const userId = ctx.from?.id;
-                    if (!chatId || !userId) {
-                        await ctx.answerCbQuery(
-                            'Ошибка проверки. Попробуйте позже.',
-                            { show_alert: false },
-                        );
-                        return;
-                    }
-                    const member = await ctx.telegram.getChatMember(
-                        chatId,
-                        userId,
-                    );
-                    const status = member?.status;
-                    const isSubscribed =
-                        status === 'member' ||
-                        status === 'administrator' ||
-                        status === 'creator' ||
-                        status === 'owner';
+                    const isSubscribed = await checkIsSubscribed(ctx);
+
                     if (isSubscribed) {
                         await ctx.answerCbQuery(
                             'Подписка подтверждена! Открываю урок…',
@@ -283,7 +265,7 @@ export const callbackQueryHandler = async (ctx) => {
                         );
                     } else {
                         await ctx.answerCbQuery(
-                            'Вы не подписаны на канал. Подпишитесь и нажмите «✅ Подписался».',
+                            'Вы не подписаны на канал. Подпишитесь и нажмите «🔄 Проверить подписку».',
                             { show_alert: false },
                         );
                     }
@@ -295,40 +277,78 @@ export const callbackQueryHandler = async (ctx) => {
                     );
                 }
             }
-            if (command === 'free_lesson') {
-                // Guard direct access: verify subscription again
+
+            if (command === 'free_prompts_start') {
+                const isSubscribed = await checkIsSubscribed(ctx);
+
+                if (isSubscribed) {
+                    await navigateTo('free_prompts', async () =>
+                        freePromptsScreen(ctx, true),
+                    );
+                } else {
+                    await navigateTo('free_prompts_start', async () =>
+                        freePromptsStartScreen(ctx, true),
+                    );
+                }
+            }
+
+            if (command === 'check_subscription_free_prompts') {
                 try {
-                    const chatId = process.env.PUBLIC_CHANNEL_ID;
-                    const userId = ctx.from?.id;
-                    if (!chatId || !userId) {
+                    const isSubscribed = await checkIsSubscribed(ctx);
+
+                    if (isSubscribed) {
                         await ctx.answerCbQuery(
-                            'Ошибка проверки. Попробуйте позже.',
+                            'Подписка подтверждена! Открываю промпты…',
                             { show_alert: false },
                         );
-                        return;
-                    }
-                    const member = await ctx.telegram.getChatMember(
-                        chatId,
-                        userId,
-                    );
-                    const status = member?.status;
-                    const isSubscribed =
-                        status === 'member' ||
-                        status === 'administrator' ||
-                        status === 'creator' ||
-                        status === 'owner';
-                    if (isSubscribed) {
-                        await navigateTo('free_lesson', async () =>
-                            freeLessonScreen(ctx, true),
+                        await navigateTo('free_prompts', async () =>
+                            freePromptsScreen(ctx, true),
                         );
                     } else {
                         await ctx.answerCbQuery(
-                            'Сначала подпишитесь на канал, чтобы получить бесплатный урок.',
+                            'Вы не подписаны на канал. Подпишитесь и нажмите «🔄 Проверить подписку».',
                             { show_alert: false },
                         );
-                        // Optionally show the start screen again
-                        await navigateTo('free_lesson_start', async () =>
-                            freeLessonStartScreen(ctx, true),
+                    }
+                } catch (e) {
+                    console.error('Subscription check error:', e);
+                    await ctx.answerCbQuery(
+                        'Не удалось проверить подписку. Попробуйте позже.',
+                        { show_alert: false },
+                    );
+                }
+            }
+
+            if (command === 'free_ai_start') {
+                const isSubscribed = await checkIsSubscribed(ctx);
+
+                if (isSubscribed) {
+                    await navigateTo('free_ai', async () =>
+                        freeAiScreen(ctx, true),
+                    );
+                } else {
+                    await navigateTo('free_ai_start', async () =>
+                        freeAiStartScreen(ctx, true),
+                    );
+                }
+            }
+
+            if (command === 'check_subscription_free_ai') {
+                try {
+                    const isSubscribed = await checkIsSubscribed(ctx);
+
+                    if (isSubscribed) {
+                        await ctx.answerCbQuery(
+                            'Подписка подтверждена! Открываю топ нейронок…',
+                            { show_alert: false },
+                        );
+                        await navigateTo('free_ai', async () =>
+                            freeAiScreen(ctx, true),
+                        );
+                    } else {
+                        await ctx.answerCbQuery(
+                            'Вы не подписаны на канал. Подпишитесь и нажмите «🔄 Проверить подписку».',
+                            { show_alert: false },
                         );
                     }
                 } catch (e) {

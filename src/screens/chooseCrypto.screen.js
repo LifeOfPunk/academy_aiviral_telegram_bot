@@ -42,20 +42,13 @@ export const chooseCryptoForPayScreenHandler = async (
                 command: 'send_file_personal_policy',
             },
         ],
-        [{ text: '❓ Задать вопрос', command: 'ask_question' }],
+        [{ text: '❓ Обратная связьс', command: 'faq' }],
         [{ text: '⏪ Вернуться назад', command: 'back' }],
     );
 
     const reply_markup = {
         inline_keyboard: chooseCryptoForPayScreenKeyboard.map((rowItem) =>
             rowItem.map((item) => {
-                if (item.command === 'ask_question') {
-                    return {
-                        text: item.text,
-                        url: `https://t.me/${process.env.SUPPORT_USERNAME}`,
-                    };
-                }
-
                 return {
                     text: item.text,
                     callback_data: JSON.stringify({
