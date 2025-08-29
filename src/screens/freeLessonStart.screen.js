@@ -24,15 +24,15 @@ const reply_markup = {
 };
 
 export const freeLessonStartScreen = async (ctx, editMessage) => {
-    const message = `Хочешь получить бесплатный урок? Подпишись на Telegram-канал ниже.
+    const message = `👇 Подпишись на Telegram-канал, чтобы получить <b>бесплатный видеоурок</b>.
   
-Подпишись на наш Telegram-канал, чтобы не пропустить ценную информацию о рынке ИИ.`;
+Так ты помогаешь себе и нам расти, а также не пропустишь ценную информацию ИИ рынка.`;
 
     await sendOrEdit(ctx, {
         editMessage,
         text: message,
         reply_markup,
-        photoCandidates: ['src/data/freeLessonStart.jpg'],
+        photoCandidates: ['src/data/freeLessonStartRemove.jpg'],
         parse_mode: 'HTML',
         disable_web_page_preview: true,
     });

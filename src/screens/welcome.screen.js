@@ -2,16 +2,16 @@ import { WELCOME_SCREEN_MESSAGE } from '../config.js';
 import { sendOrEdit } from '../utils/media.js';
 
 const welcomeUserKeyboardList = [
-    [{ text: '📚 Получить бесплатный урок', command: 'free_lesson_start' }],
+    [{ text: '🎬 Получить бесплатный урок', command: 'free_lesson_start' }],
     [
         {
-            text: '🎁 Получить 10 фото промптов ChatGPT',
+            text: '🎁 10 фото промптов ChatGPT',
             command: 'free_prompts_start',
         },
     ],
     [
         {
-            text: '😎 Топ 10 бесплатных нейронок 2025 года',
+            text: '😎 Топ 10 бесплатных нейронок',
             command: 'free_ai_start',
         },
     ],
