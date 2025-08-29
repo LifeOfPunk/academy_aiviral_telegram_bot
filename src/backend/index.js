@@ -98,7 +98,10 @@ app.post('/crypto_payment', async (req, res) => {
             return res.status(404).json({ error: 'Order not found' });
         }
 
-        const { userId, tariff } = order;
+        const {
+            userId,
+            input: { tariff },
+        } = order;
         console.log(`tariff + ${tariff}`);
 
         if (Status === 'Success') {
