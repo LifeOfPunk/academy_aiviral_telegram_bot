@@ -32,7 +32,7 @@ export const freeLessonStartScreen = async (ctx, editMessage) => {
         editMessage,
         text: message,
         reply_markup,
-        photoCandidates: ['src/data/freeLessonStart.jpg'],
+        photoCandidates: ['src/data/freeLessonStartRemove.jpg'],
         parse_mode: 'HTML',
         disable_web_page_preview: true,
     });
