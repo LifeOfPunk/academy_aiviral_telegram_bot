@@ -99,6 +99,7 @@ app.post('/crypto_payment', async (req, res) => {
         }
 
         const { userId, tariff } = order;
+        console.log(`tariff + ${tariff}`);
 
         if (Status === 'Success') {
             if (order.output.id === PaymentId && !Test) {
