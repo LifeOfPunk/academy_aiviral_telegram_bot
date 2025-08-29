@@ -20,6 +20,7 @@ import { freePromptsStartScreen } from '../screens/freePromptsStart.screen.js';
 import { freePromptsScreen } from '../screens/freePrompts.screen.js';
 import { freeAiStartScreen } from '../screens/freAiStart.screen.js';
 import { freeAiScreen } from '../screens/freeAi.screen.js';
+import { notSubscribedScreen } from '../screens/notSubscribed.screen.js';
 
 export const callbackQueryHandler = async (ctx) => {
     const { callbackQuery, chat } = ctx;
@@ -264,10 +265,7 @@ export const callbackQueryHandler = async (ctx) => {
                             freeLessonScreen(ctx, true),
                         );
                     } else {
-                        await ctx.answerCbQuery(
-                            'Вы не подписаны на канал. Подпишитесь и нажмите «🔄 Проверить подписку».',
-                            { show_alert: false },
-                        );
+                        await notSubscribedScreen(ctx, command);
                     }
                 } catch (e) {
                     console.error('Subscription check error:', e);
@@ -305,10 +303,7 @@ export const callbackQueryHandler = async (ctx) => {
                             freePromptsScreen(ctx, true),
                         );
                     } else {
-                        await ctx.answerCbQuery(
-                            'Вы не подписаны на канал. Подпишитесь и нажмите «🔄 Проверить подписку».',
-                            { show_alert: false },
-                        );
+                        await notSubscribedScreen(ctx, command);
                     }
                 } catch (e) {
                     console.error('Subscription check error:', e);
@@ -346,10 +341,7 @@ export const callbackQueryHandler = async (ctx) => {
                             freeAiScreen(ctx, true),
                         );
                     } else {
-                        await ctx.answerCbQuery(
-                            'Вы не подписаны на канал. Подпишитесь и нажмите «🔄 Проверить подписку».',
-                            { show_alert: false },
-                        );
+                        await notSubscribedScreen(ctx, command);
                     }
                 } catch (e) {
                     console.error('Subscription check error:', e);
