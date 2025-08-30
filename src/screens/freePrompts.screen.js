@@ -7,7 +7,7 @@ const keyboard = [
 ];
 
 export const freePromptsScreen = async (ctx, editMessage) => {
-    const message = `🎁 10 фото промптов ChatGPT`;
+    const message = `Мы подготовили ТОП-12 бесплатных фото промтов. Это твой первый шаг к созданию крутого ИИ-контента без вложений.`;
 
     const reply_markup = {
         inline_keyboard: keyboard.map((row) =>
