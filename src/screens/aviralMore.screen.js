@@ -2,8 +2,8 @@ import 'dotenv/config';
 import { sendOrEdit } from '../utils/media.js';
 
 const keyboard = [
-    [{ text: '🐦 Twitter', command: 'aviral_twitter' }],
-    [{ text: '❓Обратная связь', command: 'faq' }],
+    //[{ text: '🐦 Twitter', command: 'aviral_twitter' }],
+    //[{ text: '❓Обратная связь', command: 'faq' }],
     [{ text: '⏪ Вернуться назад', command: 'back' }],
 ];
 
