@@ -40,6 +40,8 @@ export const faqScreen = async (ctx) => {
 
     await ctx.telegram.sendMessage(ctx.chat.id, message, {
         parse_mode: 'HTML',
+    
+    reply_markup,
 
 
     });
