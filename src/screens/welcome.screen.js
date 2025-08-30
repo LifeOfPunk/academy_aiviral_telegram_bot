@@ -15,7 +15,7 @@ const welcomeUserKeyboardList = [
             command: 'free_ai_start',
         },
     ],
-    [{ text: '🎓 Купить доступ в академию', command: 'payment_methods' }],
+    [{ text: '🎓 Купить доступ в академию', command: '' }],
     [{ text: '⚡️ Узнать больше о академии', command: 'about_aviral' }],
     //[{ text: '❓ Обратная связь', command: 'faq' }],
 ];
