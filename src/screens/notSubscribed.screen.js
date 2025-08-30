@@ -1,12 +1,12 @@
 import 'dotenv/config';
 import { sendOrEdit } from '../utils/media.js';
 
-// const channelUrl = process.env.PUBLIC_CHANNEL_URL;
+const channelUrl = process.env.PUBLIC_CHANNEL_URL;
 
 export const notSubscribedScreen = async (ctx, cmdToCheck) => {
     const reply_markup = {
         inline_keyboard: [
-            // [{ text: '✅ Подписаться', url: channelUrl }],
+            [{ text: '✅ Подписаться', url: channelUrl }],
             [
                 {
                     text: '🔄 Проверить подписку',
