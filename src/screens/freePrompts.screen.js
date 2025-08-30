@@ -1,7 +1,10 @@
 import 'dotenv/config';
 import { sendOrEdit } from '../utils/media.js';
 
-const keyboard = [[{ text: '⏪ Вернуться назад', command: 'back' }]];
+const keyboard = [
+    [{ text: '🎁 Получить 12 промтов', command: 'prompt_link' }],
+    [{ text: '⏪ Вернуться назад', command: 'back' }],
+];
 
 export const freePromptsScreen = async (ctx, editMessage) => {
     const message = `🎁 10 фото промптов ChatGPT`;
@@ -9,6 +12,12 @@ export const freePromptsScreen = async (ctx, editMessage) => {
     const reply_markup = {
         inline_keyboard: keyboard.map((row) =>
             row.map((item) => {
+                if (item.command === 'prompt_link') {
+                    return {
+                        text: item.text,
+                        url: process.env.FREE_PROMPT_URL,
+                    };
+                }
                 return {
                     text: item.text,
                     callback_data: JSON.stringify({ command: item.command }),
