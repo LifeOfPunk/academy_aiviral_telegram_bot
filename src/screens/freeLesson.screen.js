@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { sendOrEdit } from '../utils/media.js';
 
 const keyboard = [
-    [{ text: '🤗 Посмотреть весь урок', command: 'lesson_link' }],
+    [{ text: '🎬 Посмотреть урок', command: 'lesson_link' }],
     [{ text: '⏪ Вернуться назад', command: 'back' }],
 ];
 
