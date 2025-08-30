@@ -170,7 +170,7 @@ export const callbackQueryHandler = async (ctx) => {
                 );
             }
             if (command === 'faq') {
-                await navigateTo('faq', async () => await faqScreen(ctx));
+                await navigateTo('faq', async () => await faqScreen(ctx, true));
             }
             if (command === 'aviral_more') {
                 await navigateTo('aviral_more', async () =>
