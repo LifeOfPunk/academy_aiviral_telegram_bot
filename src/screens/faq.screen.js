@@ -30,7 +30,7 @@ export const faqScreen = async (ctx) => {
 
 Возможно мы уже ответили на твой вопрос. Если не нашел ответ. Пиши и мы обязательно ответим.`;
 
-    //const media = 'src/data/faq.jpg';
+    const media = 'src/data/faq.jpg';
 
     const hasMedia = existsSync(media);
 
