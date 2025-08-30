@@ -42,28 +42,5 @@ export const faqScreen = async (ctx) => {
         parse_mode: 'HTML',
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        reply_markup,
-
-
-
     });
 };
