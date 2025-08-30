@@ -10,7 +10,7 @@ const keyboard = [
 ];
 
 export const aboutAviralScreen = async (ctx, editMessage) => {
-    const message = 'Кто такие aiVIRAL?';
+    const message = 'Кто такие AIVIRAL?';
 
     const reply_markup = {
         inline_keyboard: keyboard.map((row) =>
