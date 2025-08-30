@@ -6,7 +6,7 @@ const reply_markup = {
         [
             {
                 text: '🤠 FAQ',
-                url: `https://t.me/${process.env.SUPPORT_USERNAME}`,
+                url: process.env.FREE_FAQ_URL,
             },
         ],
         [
