@@ -40,7 +40,7 @@ export const faqScreen = async (ctx, editMessage) => {
         editMessage,
         text: message,
         reply_markup,
-        photoCandidates: ['src/data/faq.jpg'],
+        //photoCandidates: ['src/data/faq.jpg'],
         parse_mode: 'HTML',
         disable_web_page_preview: true,
     });
