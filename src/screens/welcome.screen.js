@@ -1,4 +1,4 @@
-import { WELCOME_SCREEN_MESSAGE } from '../config.js';
+//import { WELCOME_SCREEN_MESSAGE } from '../config.js';
 import { sendOrEdit } from '../utils/media.js';
 
 const welcomeUserKeyboardList = [
@@ -39,7 +39,7 @@ const message = '🐯 Что за тигр AIVIRAL?';
 
     await sendOrEdit(ctx, {
         editMessage,
-        text: WELCOME_SCREEN_MESSAGE,
+        text: message,
         reply_markup,
         photoCandidates: ['src/data/welcome.jpg'],
         parse_mode: 'HTML',
