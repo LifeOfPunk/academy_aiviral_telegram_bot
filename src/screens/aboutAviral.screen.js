@@ -4,7 +4,7 @@ import { sendOrEdit } from '../utils/media.js';
 const keyboard = [
     //[{ text: '🔦 Подробнее об AIVIRAL', command: 'aviral_more' }],
     //[{ text: '📂 Примеры работ', command: 'portfolio' }],
-    [{ text: '🤠 FAQ - Обратная связь', command: 'faq' }],
+    [{ text: '🤠 FAQ', command: 'faq' }],
     [{ text: '❓ Обратная связь', command: 'connect' }],
     [{ text: '⏪ Вернуться назад', command: 'back' }],
 ];
