@@ -19,9 +19,9 @@ const reply_markup = {
 };
 
 export const faqScreen = async (ctx) => {
-    const message = `Самые часто задаваемые вопросы FAQ1
-Самые часто задаваемые вопросы FAQ2
-Самые часто задаваемые вопросы FAQ3`;
+    const message = `<b>КАК БЫСТРО Я СМОГУ ОКУПИТЬ ОБУЧЕНИЕ?</b>
+         Самые часто задаваемые вопросы FAQ2
+        Самые часто задаваемые вопросы FAQ3`;
 
     const media = 'src/data/faq.jpg';
 
