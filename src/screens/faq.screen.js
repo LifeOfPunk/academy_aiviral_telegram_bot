@@ -1,46 +1,47 @@
 import 'dotenv/config';
-import { existsSync } from 'fs';
+import { sendOrEdit } from '../utils/media.js';
 
-const reply_markup = {
-    inline_keyboard: [
-        [
-            {
-                text: '🤠 FAQ',
-                url: process.env.FREE_FAQ_URL,
-            },
-        ],
-        [
-            {
-                text: '❓ Задать вопрос менеджеру',
-                url: `https://t.me/${process.env.SUPPORT_USERNAME}`,
-            },
-        ],
-        [
-            {
-                text: `⏪ Вернуться назад`,
-                callback_data: JSON.stringify({ command: `back` }),
-            },
-        ],
-    ],
-};
+const keyboard = [
+    [{ text: '🤠 FAQ', command: 'faq' }],
+    [{ text: '❓ Задать вопрос менеджеру', command: 'connect' }],
+    [{ text: '⏪ Вернуться назад', command: 'back' }],
+];
 
-export const faqScreen = async (ctx) => {
+export const faqScreen = async (ctx, editMessage) => {
     const message = `Хочешь связаться с поддежкой? 
 Сначала внимательно прочитай FAQ (ответы на часто задаваемые вопросы).
 
-Возможно мы уже ответили на твой вопрос. Если не нашел ответ. Пиши и мы обязательно ответим.`;
+Возможно мы уже ответили на твой вопрос. Если не нашел ответ — пиши, и мы обязательно ответим.`;
 
-    // const media = 'src/data/faq.jpg';
-    // const hasMedia = existsSync(media);
-    // if (hasMedia) {
-    //     await ctx.telegram.sendPhoto(ctx.chat.id, { source: media });
-    // }
+    const reply_markup = {
+        inline_keyboard: keyboard.map((row) =>
+            row.map((item) => {
+                if (item.command === 'faq') {
+                    return {
+                        text: item.text,
+                        url: process.env.FREE_FAQ_URL,
+                    };
+                }
+                if (item.command === 'connect') {
+                    return {
+                        text: item.text,
+                        url: `https://t.me/${process.env.SUPPORT_USERNAME}`,
+                    };
+                }
+                return {
+                    text: item.text,
+                    callback_data: JSON.stringify({ command: item.command }),
+                };
+            }),
+        ),
+    };
 
-    await ctx.telegram.sendMessage(ctx.chat.id, message, {
+    await sendOrEdit(ctx, {
+        editMessage,
+        text: message,
+        reply_markup,
+        photoCandidates: ['src/data/faq.jpg'],
         parse_mode: 'HTML',
-    
-    reply_markup,
-
-
+        disable_web_page_preview: true,
     });
 };
