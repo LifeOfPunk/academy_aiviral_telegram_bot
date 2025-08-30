@@ -23,6 +23,7 @@ const welcomeUserKeyboardList = [
 // const userSubMenu = { text: '📚 Subscriber menu', callback_data: JSON.stringify({command: "subscriber_menu"}) };
 
 export const welcomeScreenHandler = async (ctx, editMessage) => {
+const message = '🐯 Что за тигр AIVIRAL?';
     const reply_markup = {
         inline_keyboard: welcomeUserKeyboardList.map((rowItem) =>
             rowItem.map((item) => {
