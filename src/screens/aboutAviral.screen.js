@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { sendOrEdit } from '../utils/media.js';
 
 const keyboard = [
-    [{ text: '📖 Подробнее об AIVIRAL', command: 'aviral_more' }],
+    [{ text: '🔦 Подробнее об AIVIRAL', command: 'aviral_more' }],
     [{ text: '📂 Примеры работ', command: 'portfolio' }],
     [{ text: '🤠 FAQ', command: 'faq' }],
     [{ text: '❓ Обратная связь', command: 'faq' }],
