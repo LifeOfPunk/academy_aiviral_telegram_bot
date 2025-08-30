@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { sendOrEdit } from '../utils/media.js';
+import { existsSync } from 'fs';
 
 const reply_markup = {
     inline_keyboard: [
