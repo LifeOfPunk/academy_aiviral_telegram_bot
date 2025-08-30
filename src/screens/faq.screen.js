@@ -5,6 +5,12 @@ const reply_markup = {
     inline_keyboard: [
         [
             {
+                text: '❓ FAQ',
+                url: `https://t.me/${process.env.SUPPORT_USERNAME}`,
+            },
+        ],
+        [
+            {
                 text: '❓ Задать вопрос менеджеру',
                 url: `https://t.me/${process.env.SUPPORT_USERNAME}`,
             },
