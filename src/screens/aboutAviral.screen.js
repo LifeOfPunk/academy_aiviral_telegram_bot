@@ -3,8 +3,8 @@ import { sendOrEdit } from '../utils/media.js';
 
 const keyboard = [
     //[{ text: '🔦 Подробнее об AIVIRAL', command: 'aviral_more' }],
-    [{ text: '📂 Примеры работ', command: 'portfolio' }],
-    [{ text: '🤠 FAQ - Обратная связь', command: 'faq' }],
+    [{ text: '🤠 FAQ', command: 'faq' }],
+    [{ text: '🤝 Обратная связь', command: 'connect' }],
     //[{ text: '❓ Обратная связь', command: 'faq' }],
     [{ text: '⏪ Вернуться назад', command: 'back' }],
 ];
@@ -15,6 +15,18 @@ export const aboutAviralScreen = async (ctx, editMessage) => {
     const reply_markup = {
         inline_keyboard: keyboard.map((row) =>
             row.map((item) => {
+                if (item.command === 'faq') {
+                    return {
+                        text: item.text,
+                        url: process.env.FREE_FAQ_URL,
+                         };
+                }
+                if (item.command === 'connect') {
+                    return {
+                        text: item.text,
+                        url: `https://t.me/${process.env.SUPPORT_USERNAME}`,
+                    };
+                }
                 return {
                     text: item.text,
                     callback_data: JSON.stringify({ command: item.command }),
