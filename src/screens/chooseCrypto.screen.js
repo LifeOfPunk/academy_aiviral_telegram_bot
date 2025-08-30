@@ -42,7 +42,7 @@ export const chooseCryptoForPayScreenHandler = async (
                 command: 'send_file_personal_policy',
             },
         ],
-        [{ text: '❓ Обратная связьс', command: 'faq' }],
+        [{ text: '❓ Обратная связь', command: 'faq' }],
         [{ text: '⏪ Вернуться назад', command: 'back' }],
     );
 
