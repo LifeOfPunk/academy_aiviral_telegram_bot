@@ -16,7 +16,7 @@ const welcomeUserKeyboardList = [
         },
     ],
     [{ text: '🎓 Купить доступ в академию', command: 'payment_methods' }],
-    [{ text: '💡 Узнать больше о академии', command: 'about_aviral' }],
+    [{ text: '⚡️ Узнать больше о академии', command: 'about_aviral' }],
     //[{ text: '❓ Обратная связь', command: 'faq' }],
 ];
 
