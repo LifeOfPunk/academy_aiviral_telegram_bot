@@ -17,7 +17,7 @@ const welcomeUserKeyboardList = [
     ],
     [{ text: '🎓 Купить доступ в академию', command: 'payment_methods' }],
     [{ text: 'ℹ️ Узнать больше о академии', command: 'about_aviral' }],
-    [{ text: '❓ Обратная связь', command: 'faq' }],
+    //[{ text: '❓ Обратная связь', command: 'faq' }],
 ];
 
 // const userSubMenu = { text: '📚 Subscriber menu', callback_data: JSON.stringify({command: "subscriber_menu"}) };
