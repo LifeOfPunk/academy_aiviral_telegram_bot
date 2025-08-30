@@ -35,7 +35,7 @@ export const chooseCryptoForPayScreenHandler = async (
     );
 
     chooseCryptoForPayScreenKeyboard.push(
-        [{ text: '📝 Договор-оферта', url: process.env.FREE_FAQ_URL }],
+        [{ text: '📝 Договор-оферта', command: 'send_file_offer_agreement' }],
         [
             {
                 text: '📝 Политика конфиденциальности',
