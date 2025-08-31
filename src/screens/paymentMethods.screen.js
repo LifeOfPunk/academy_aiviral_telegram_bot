@@ -32,7 +32,7 @@ export const paymentMethodsScreen = async (ctx, editMessage) => {
         editMessage,
         text: message,
         reply_markup,
-        photoCandidates: ['src/data/paymentMethods.jpg'],
+        photoCandidates: ['src/data/paymentMethods_REMOVE.jpg'],
         parse_mode: 'HTML',
         disable_web_page_preview: true,
     });
