@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { sendOrEdit } from '../utils/media.js';
 
-const channelUrl = process.env.PUBLIC_CHANNEL_SECOND_URL;
+const channelUrl = process.env.PUBLIC_CHANNEL_THIRD_URL;
 
 const reply_markup = {
     inline_keyboard: [
@@ -24,7 +24,7 @@ const reply_markup = {
 };
 
 export const freeAiStartScreen = async (ctx, editMessage) => {
-    const message = `🤝 Подпишись на Telegram-канал, чтобы получить <b>10 фото промтов ChatGPT</b>.
+    const message = `🤝 Подпишись на Telegram-канал, чтобы получить <b>Топ 10 бесплатных нейронок</b>.
   
 Вместе мы растём быстрее, а ты первым узнаёшь о трендах AI.`;
 
