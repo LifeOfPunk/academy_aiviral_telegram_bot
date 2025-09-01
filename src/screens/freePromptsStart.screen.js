@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { sendOrEdit } from '../utils/media.js';
 
-const channelUrl = process.env.PUBLIC_CHANNEL_URL;
+const channelUrl = process.env.PUBLIC_CHANNEL_SECOND_URL;
 
 const reply_markup = {
     inline_keyboard: [
