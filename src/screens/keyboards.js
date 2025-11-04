@@ -38,6 +38,12 @@ export function createCatalogKeyboard(page = 0, itemsPerPage = 5) {
         buttons.push(navButtons);
     }
     
+    // Кнопка для создания по своему промпту
+    buttons.push([{
+        text: '✍️ Создать свой мем',
+        callback_data: 'custom_prompt'
+    }]);
+    
     buttons.push([{
         text: '🔙 Главное меню',
         callback_data: 'main_menu'
@@ -97,6 +103,8 @@ export function createAfterPaymentKeyboard() {
 export async function createMainMenuKeyboard(userId) {
     const user = await userService.getUser(userId);
     const freeQuota = user?.free_quota || 0;
+    const paidQuota = user?.paid_quota || 0;
+    const totalQuota = freeQuota + paidQuota;
     
     const buttons = [];
     
@@ -108,11 +116,13 @@ export async function createMainMenuKeyboard(userId) {
     //     }]);
     // }
     
-    // Новая кнопка "Бесплатный мем" - ведет на каталог мемов
-    buttons.push([{
-        text: '🎁 Бесплатный мем',
-        callback_data: 'catalog'
-    }]);
+    // Новая кнопка "Бесплатный мем" - показываем только если есть бесплатная квота
+    if (freeQuota > 0) {
+        buttons.push([{
+            text: '🎁 Бесплатный мем',
+            callback_data: 'catalog'
+        }]);
+    }
     
     // Остальные кнопки меню
     buttons.push(

@@ -235,6 +235,50 @@ bot.action(/catalog.*/, async (ctx) => {
     }
 });
 
+// Обработка кнопки "Свой промпт"
+bot.action('custom_prompt', async (ctx) => {
+    try {
+        await safeAnswerCbQuery(ctx);
+        
+        // Проверяем квоту
+        const userId = ctx.from.id;
+        const hasQuota = await userService.hasQuota(userId);
+        
+        if (!hasQuota) {
+            await ctx.editMessageText(MESSAGES.NO_QUOTA, {
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '💳 Купить видео', callback_data: 'buy' }],
+                        [{ text: '🔙 Назад', callback_data: 'catalog' }]
+                    ]
+                }
+            });
+            return;
+        }
+        
+        // Устанавливаем флаг ожидания промпта
+        ctx.session = ctx.session || {};
+        ctx.session.waitingFor = 'custom_prompt';
+        
+        await ctx.editMessageText(
+            '✍️ Создать свой мем\n\n' +
+            '📝 Опишите что вы хотите увидеть в видео:\n\n' +
+            '💡 Пример: "Кот в космосе играет на гитаре"\n\n' +
+            '⚠️ Описание должно быть на английском языке для лучшего результата.',
+            {
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '🔙 Отмена', callback_data: 'catalog' }]
+                    ]
+                }
+            }
+        );
+    } catch (err) {
+        console.error('❌ Error in custom_prompt:', err);
+        await safeAnswerCbQuery(ctx, 'Произошла ошибка');
+    }
+});
+
 // Обработка выбора мема
 bot.action(/meme_(.+)/, async (ctx) => {
     try {
@@ -295,7 +339,60 @@ bot.on('text', async (ctx) => {
     try {
         ctx.session = ctx.session || {};
         
-        if (ctx.session.waitingFor === 'free_prompt') {
+        if (ctx.session.waitingFor === 'custom_prompt') {
+            const prompt = ctx.message.text.trim();
+            
+            // Валидация промпта
+            if (prompt.length < 10) {
+                return await ctx.reply('❌ Промпт слишком короткий. Опишите подробнее (минимум 10 символов).');
+            }
+            
+            if (prompt.length > 1000) {
+                return await ctx.reply('❌ Промпт слишком длинный. Максимум 1000 символов.');
+            }
+            
+            const userId = ctx.from.id;
+            
+            // Списываем квоту
+            const deducted = await userService.deductQuota(userId);
+            if (!deducted) {
+                return await ctx.reply('❌ Недостаточно генераций');
+            }
+            
+            await ctx.reply('⏳ Начинаю генерацию видео по вашему промпту...');
+            
+            // Создаём генерацию с пользовательским промптом
+            const generation = await generationService.createGeneration({
+                userId,
+                chatId: ctx.chat.id,
+                memeId: 'custom',
+                name: 'Custom',
+                gender: 'male',
+                customPrompt: prompt
+            });
+            
+            if (generation.error) {
+                // Возвращаем квоту при ошибке
+                await userService.refundQuota(userId);
+                return await ctx.reply('❌ Ошибка создания генерации: ' + generation.error);
+            }
+            
+            await ctx.reply(MESSAGES.GENERATION_STARTED);
+            
+            // Сохраняем промпт для отправки админам ПОСЛЕ генерации
+            ctx.session.customPromptData = {
+                userId,
+                username: ctx.from.username || 'нет',
+                firstName: ctx.from.first_name || '',
+                prompt,
+                generationId: generation.generationId,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Очищаем флаг ожидания
+            delete ctx.session.waitingFor;
+            
+        } else if (ctx.session.waitingFor === 'free_prompt') {
             const prompt = ctx.message.text.trim();
             
             // Валидация промпта
@@ -586,6 +683,64 @@ async function waitForGeneration(ctx, generationId, quickCheckAttempts = 10) {
     );
 }
 
+// Inline режим для пересылки видео
+bot.on('inline_query', async (ctx) => {
+    try {
+        const userId = ctx.from.id;
+        const query = ctx.inlineQuery.query;
+        
+        console.log(`🔍 Inline query from user ${userId}, query: "${query}"`);
+        
+        // Получаем последнюю успешную генерацию пользователя
+        const generations = await generationService.getUserGenerations(userId);
+        console.log(`📊 User has ${generations.length} total generations`);
+        
+        const lastVideo = generations.find(g => g.status === 'done' && g.videoUrl);
+        
+        if (!lastVideo) {
+            console.log('❌ No completed video found for inline query');
+            // Отправляем пустой результат с сообщением
+            return await ctx.answerInlineQuery([], {
+                cache_time: 0,
+                switch_pm_text: 'Создать видео',
+                switch_pm_parameter: 'create'
+            });
+        }
+        
+        console.log(`✅ Found video: ${lastVideo.generationId}`);
+        console.log(`   Video URL: ${lastVideo.videoUrl}`);
+        
+        // Создаем результат для inline режима
+        const results = [{
+            type: 'video',
+            id: lastVideo.generationId,
+            video_url: lastVideo.videoUrl,
+            mime_type: 'video/mp4',
+            thumb_url: lastVideo.videoUrl,
+            title: `🎬 ${lastVideo.memeName}`,
+            description: `Видео с именем: ${lastVideo.name}`,
+            caption: `🎬 Смотри какое крутое видео я создал в @${process.env.BOT_NAME}!\n\n✨ Ты тоже можешь создать своё!`,
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: '🎬 Создать своё видео', url: `https://t.me/${process.env.BOT_NAME}` }]
+                ]
+            }
+        }];
+        
+        console.log(`📤 Sending inline query result with video`);
+        await ctx.answerInlineQuery(results, { cache_time: 0 });
+        console.log(`✅ Inline query answered successfully`);
+    } catch (err) {
+        console.error('❌ Error in inline_query:', err);
+        console.error(err.stack);
+        await ctx.answerInlineQuery([], {
+            cache_time: 0,
+            switch_pm_text: 'Создать видео',
+            switch_pm_parameter: 'create'
+        });
+    }
+});
+
 // Импорт контроллеров платежей
 import * as paymentController from './controllers/paymentController.js';
 
@@ -778,9 +933,16 @@ if (USE_WEBHOOK) {
 } else {
     // Polling режим - обычный режим
     bot.launch()
-        .then(() => {
+        .then(async () => {
             console.log('✅ MeeMee bot started successfully (polling mode)!');
             console.log(`Bot username: @${bot.botInfo.username}`);
+            
+            // Восстанавливаем зависшие генерации
+            try {
+                await generationService.recoverPendingGenerations();
+            } catch (err) {
+                console.error('⚠️ Error recovering pending generations:', err.message);
+            }
         })
         .catch(err => {
             console.error('❌ Failed to start bot:', err);

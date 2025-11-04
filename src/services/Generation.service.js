@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 export class GenerationService {
     constructor(bot = null) {
         this.apiKey = process.env.KIE_AI_API_KEY;
-        // Kie.ai Sora 2 API endpoint
+        // Video generation API endpoint
         this.apiUrl = `https://api.kie.ai/api/v1/jobs`;
         this.modelName = 'sora-2-text-to-video';
         this.bot = bot; // Telegram bot instance для отправки уведомлений
@@ -161,7 +161,7 @@ export class GenerationService {
             // Обновляем статус
             await this.updateGeneration(generationId, { status: 'processing' });
 
-            // Вызов Kie.ai Sora 2 API
+            // Вызов API для генерации видео
             const videoUrl = await this.generateVideo(generation.prompt);
 
             if (videoUrl) {
@@ -234,14 +234,14 @@ export class GenerationService {
         }
     }
 
-    // Генерация видео через Kie.ai Sora 2 API
+    // Генерация видео через API
     async generateVideo(prompt) {
         try {
             if (!this.apiKey) {
-                throw new Error('Kie.ai API key not configured');
+                throw new Error('API key not configured');
             }
 
-            console.log('🎬 Starting video generation with Kie.ai Sora 2...');
+            console.log('🎬 Starting video generation...');
             
             // Определяем, является ли prompt объектом или строкой
             let promptData;
@@ -254,7 +254,7 @@ export class GenerationService {
                 console.log('Prompt:', promptData);
             }
 
-            // Создание задачи через Kie.ai Sora 2 API
+            // Создание задачи через API
             const response = await axios.post(
                 `${this.apiUrl}/createTask`,
                 {
@@ -284,7 +284,7 @@ export class GenerationService {
                 
                 // Специальная обработка для ошибки 402 (недостаточно кредитов)
                 if (errorCode === 402) {
-                    throw new Error(`❌ Недостаточно кредитов на Kie.ai API: ${errorMsg}`);
+                    throw new Error(`❌ Недостаточно кредитов: ${errorMsg}`);
                 }
                 
                 throw new Error(`API Error (${errorCode}): ${errorMsg}`);
@@ -308,7 +308,7 @@ export class GenerationService {
                 
                 // Проверяем ошибку в response
                 if (err.response.data.code === 402) {
-                    throw new Error(`❌ Недостаточно кредитов на Kie.ai API: ${err.response.data.msg}`);
+                    throw new Error(`❌ Недостаточно кредитов: ${err.response.data.msg}`);
                 }
                 
                 throw new Error(`API Error (${err.response.data.code}): ${err.response.data.msg || 'Unknown error'}`);
@@ -506,28 +506,36 @@ export class GenerationService {
                         chatId,
                         { url: data.videoUrl },
                         { 
-                            caption: '✅ Ваше видео готово!\n\n🎬 Генерация успешно завершена!',
+                            caption: '✅ Ваше видео готово!\n\n🎬 Генерация успешно завершена!\n\n⚠️ ВАЖНО: Сохраните видео прямо сейчас!',
                             reply_markup: {
                                 inline_keyboard: [
+                                    [{ text: '👥 Поделиться с другом', switch_inline_query: '' }],
                                     [{ text: '🎬 Создать ещё', callback_data: 'catalog' }],
-                                    [{ text: '🏠 Главное меню', callback_data: 'main_menu' }]
+                                    [{ text: '�  Главное меню', callback_data: 'main_menu' }]
                                 ]
                             }
                         }
                     );
                     console.log(`✅ Video sent successfully to user ${chatId}`);
+                    
+                    // Если это был custom prompt - отправляем админам
+                    const generation = await this.getGeneration(data.generationId);
+                    if (generation && generation.memeId === 'custom' && generation.prompt) {
+                        await this.sendCustomPromptToAdmins(generation);
+                    }
                 } catch (videoErr) {
                     console.error(`❌ Failed to send video, sending link instead:`, videoErr.message);
                     
                     // Если не удалось отправить видео, отправляем ссылку
                     await this.bot.telegram.sendMessage(
                         chatId,
-                        `✅ Ваше видео готово!\n\n🎬 Генерация успешно завершена!\n\n🔗 Ссылка на видео: ${data.videoUrl}`,
+                        `✅ Ваше видео готово!\n\n🎬 Генерация успешно завершена!\n\n🔗 Ссылка на видео: ${data.videoUrl}\n\n⚠️ ВАЖНО: Сохраните видео прямо сейчас!`,
                         {
                             reply_markup: {
                                 inline_keyboard: [
+                                    [{ text: '👥 Поделиться с другом', switch_inline_query: '' }],
                                     [{ text: '🎬 Создать ещё', callback_data: 'catalog' }],
-                                    [{ text: '🏠 Главное меню', callback_data: 'main_menu' }]
+                                    [{ text: '�  Главное меню', callback_data: 'main_menu' }]
                                 ]
                             }
                         }
@@ -564,6 +572,110 @@ export class GenerationService {
             }
         } catch (err) {
             console.error(`❌ Failed to send notification to user ${chatId}:`, err.message);
+        }
+    }
+
+    // Отправка custom промпта админам
+    async sendCustomPromptToAdmins(generation) {
+        try {
+            const { ADMINS } = await import('../config.js');
+            const adminBotToken = process.env.BOT_TOKEN_ADMIN;
+            
+            if (!adminBotToken || !ADMINS || ADMINS.length === 0) {
+                console.log('⚠️ Admin bot not configured, skipping prompt notification');
+                return;
+            }
+            
+            const { Telegraf } = await import('telegraf');
+            const adminBot = new Telegraf(adminBotToken);
+            
+            const time = new Date(generation.createdAt).toLocaleString('ru-RU');
+            let message = `✍️ ПОЛЬЗОВАТЕЛЬСКИЙ ПРОМПТ\n\n`;
+            message += `⏰ Время: ${time}\n`;
+            message += `👤 User ID: ${generation.userId}\n`;
+            message += `🆔 Generation ID: ${generation.generationId}\n\n`;
+            message += `📝 Промпт:\n${generation.prompt}\n\n`;
+            message += `✅ Видео успешно сгенерировано`;
+            
+            // Отправляем всем админам
+            for (const adminId of ADMINS) {
+                try {
+                    await adminBot.telegram.sendMessage(adminId, message);
+                    console.log(`✅ Custom prompt sent to admin ${adminId}`);
+                } catch (sendErr) {
+                    console.error(`❌ Failed to notify admin ${adminId}:`, sendErr.message);
+                }
+            }
+        } catch (err) {
+            console.error('❌ Error sending custom prompt to admins:', err.message);
+        }
+    }
+
+    // Восстановление зависших генераций при старте бота
+    async recoverPendingGenerations() {
+        try {
+            console.log('🔄 Checking for pending generations...');
+            
+            // Получаем все ключи генераций
+            const keys = await redis.keys('generation:*');
+            
+            if (keys.length === 0) {
+                console.log('✅ No pending generations found');
+                return;
+            }
+            
+            let recovered = 0;
+            
+            for (const key of keys) {
+                try {
+                    const data = await redis.get(key);
+                    if (!data) continue;
+                    
+                    const generation = JSON.parse(data);
+                    
+                    // Проверяем только генерации в статусе processing
+                    if (generation.status === 'processing') {
+                        console.log(`🔄 Found pending generation: ${generation.generationId}`);
+                        console.log(`   User: ${generation.userId}, Meme: ${generation.memeName}`);
+                        
+                        // Проверяем возраст генерации (не старше 30 минут)
+                        const createdAt = new Date(generation.createdAt);
+                        const now = new Date();
+                        const ageMinutes = (now - createdAt) / 1000 / 60;
+                        
+                        if (ageMinutes > 30) {
+                            console.log(`   ⏰ Generation too old (${ageMinutes.toFixed(1)} min), marking as failed`);
+                            await this.updateGeneration(generation.generationId, {
+                                status: 'failed',
+                                error: 'Generation timeout'
+                            });
+                            continue;
+                        }
+                        
+                        console.log(`   ⏰ Age: ${ageMinutes.toFixed(1)} minutes, recovering...`);
+                        
+                        // Запускаем обработку генерации заново
+                        this.processGeneration(generation.generationId).catch(err => {
+                            console.error(`❌ Error recovering generation ${generation.generationId}:`, err.message);
+                        });
+                        
+                        recovered++;
+                        
+                        // Небольшая задержка между восстановлениями
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                } catch (err) {
+                    console.error(`❌ Error processing key ${key}:`, err.message);
+                }
+            }
+            
+            if (recovered > 0) {
+                console.log(`✅ Recovered ${recovered} pending generation(s)`);
+            } else {
+                console.log('✅ No pending generations to recover');
+            }
+        } catch (err) {
+            console.error('❌ Error in recoverPendingGenerations:', err.message);
         }
     }
 }

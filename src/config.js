@@ -1,4 +1,4 @@
-export const ADMINS = [1323534384, 892965815];
+export const ADMINS = [1323534384, 1916527652];
 
 // Пакеты генераций
 export const PACKAGES = {
@@ -79,7 +79,7 @@ export const STARS_ENABLED = process.env.STARS_ENABLED === 'true';
 export const MESSAGES = {
     WELCOME: '🎬 Добро пожаловать в MeeMee!\n\nСоздавай персонализированные вирусные видео-мемы с твоим именем!\n\nВыбери действие:',
     
-    ABOUT: '📱 О проекте MeeMee\n\nMeeMee — это платформа для создания персонализированных вирусных видео-мемов.\n\n✨ Как это работает:\n1. Выбери понравившийся мем\n2. Введи своё имя и пол\n3. Получи уникальное видео!\n\n💰 Стоимость: 1 видео = 580₽ / 5.8 USDT\n\n📹 Видео создаётся за 1-3 минуты\n⚠️ Сохраняй видео сразу - повторно получить нельзя!\n\n❓ FAQ доступен по кнопке ниже',
+    ABOUT: '📱 О проекте MeeMee\n\nMeeMee — это платформа для создания персонализированных вирусных видео-мемов.\n\n✨ Как это работает:\n1. Выбери понравившийся мем\n2. Введи своё имя и пол\n3. Получи уникальное видео!\n\n💰 Стоимость: 1 видео = 500₽ / 6.2 USDT\n\n📹 Видео создаётся за 1-3 минуты\n⚠️ Сохраняй видео сразу - повторно получить нельзя!\n\n❓ FAQ доступен по кнопке ниже',
     
     MEMES_CATALOG: '🎬 Доступные мемы\n\nВыбери мем для генерации:',
     
@@ -125,17 +125,7 @@ export const MESSAGES = {
         
         message += `🎬 Баланс генераций:\n`;
         message += `├─ 🎁 Доступно бесплатных: ${availableFree}\n`;
-        message += `├─ ❤️ Использовано бесплатных: ${usedFree}\n`;
-        message += `├─ 👍 Доступно платных: ${availablePaid}\n`;
-        message += `└─ 💎 Использовано платных: ${usedPaid}\n\n`;
-        
-        // Статистика
-        const remainingBalance = user.remaining_balance || 0;
-        message += `📈 Статистика:\n`;
-        message += `├─ ✅ Успешно: ${user.successful_generations || 0}\n`;
-        message += `├─ ❌ Ошибок: ${user.failed_generations || 0}\n`;
-        message += `├─ 🏆 Остаток: ${remainingBalance}₽\n`;
-        message += `└─ 💰 Потрачено: ${user.total_spent || 0}₽\n\n`;
+        message += `└─ 💎 Доступно платных: ${availablePaid}\n\n`;
         
         // Добавляем реферальную статистику
         if (referralStats) {
@@ -225,8 +215,8 @@ export const REFERRAL_TYPE_KEYBOARD = {
 
 export const ABOUT_KEYBOARD = {
     inline_keyboard: [
-        [{ text: '📺 YouTube канал', url: 'https://youtube.com/@meemee' }],
-        [{ text: '❓ FAQ', url: 'https://teletype.in/@meemee/faq' }],
+        [{ text: '📺 YouTube канал', url: 'https://youtube.com/@aiviral-media' }],
+        [{ text: '❓ FAQ', url: 'https://telegra.ph/MeeMee-FAQ-chasto-zadavaemye-voprosy-11-04' }],
         [{ text: '💬 Обратная связь', url: `https://t.me/${process.env.SUPPORT_USERNAME || 'support'}` }],
         [{ text: '🔙 Назад', callback_data: 'main_menu' }]
     ]

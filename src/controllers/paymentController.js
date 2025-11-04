@@ -62,6 +62,8 @@ export async function handleBuy(ctx) {
 // Обработчик выбора пакета
 export async function handleSelectPackage(ctx, packageKey) {
     try {
+        await ctx.answerCbQuery(); // Убираем индикатор загрузки
+        
         const pkg = PACKAGES[packageKey];
         if (!pkg) {
             return await ctx.answerCbQuery('Пакет не найден', { show_alert: true });
@@ -112,6 +114,8 @@ export async function handleSelectPackage(ctx, packageKey) {
 // Обработчик оплаты картой
 export async function handlePayCard(ctx, packageKey = 'single') {
     try {
+        await ctx.answerCbQuery(); // Убираем индикатор загрузки
+        
         ctx.session = ctx.session || {};
         ctx.session.waitingFor = 'email';
         ctx.session.selectedPackage = packageKey;
@@ -137,6 +141,8 @@ export async function handlePayCard(ctx, packageKey = 'single') {
 // Обработчик оплаты криптой
 export async function handlePayCrypto(ctx, packageKey = 'single') {
     try {
+        await ctx.answerCbQuery(); // Убираем индикатор загрузки
+        
         ctx.session = ctx.session || {};
         ctx.session.selectedPackage = packageKey;
         
@@ -156,6 +162,8 @@ export async function handlePayCrypto(ctx, packageKey = 'single') {
 // Обработчик выбора криптовалюты
 export async function handleCryptoSelect(ctx, crypto, packageKey = 'single') {
     try {
+        await ctx.answerCbQuery(); // Убираем индикатор загрузки
+        
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         console.log('🎯 [PaymentController] handleCryptoSelect called');
         console.log(`📊 Params: crypto=${crypto}, packageKey=${packageKey}`);
@@ -194,6 +202,8 @@ export async function handleCryptoSelect(ctx, crypto, packageKey = 'single') {
 // Обработчик выбора сети
 export async function handleChainSelect(ctx, crypto, chain, packageKey = 'single') {
     try {
+        await ctx.answerCbQuery(); // Убираем индикатор загрузки
+        
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         console.log('🎯 [PaymentController] handleChainSelect called');
         console.log(`📊 Params: crypto=${crypto}, chain=${chain}, packageKey=${packageKey}`);
@@ -390,6 +400,7 @@ export async function handlePaymentSuccess(bot, orderId) {
 // Обработчик "О проекте"
 export async function handleAbout(ctx) {
     try {
+        await ctx.answerCbQuery(); // Убираем индикатор загрузки
         await ctx.editMessageText(MESSAGES.ABOUT, { reply_markup: ABOUT_KEYBOARD });
     } catch (err) {
         console.error('❌ Error in handleAbout:', err);
@@ -400,6 +411,8 @@ export async function handleAbout(ctx) {
 // Обработчик реферальной программы
 export async function handleReferral(ctx) {
     try {
+        await ctx.answerCbQuery(); // Убираем индикатор загрузки
+        
         if (!REFERRAL_ENABLED) {
             return await ctx.answerCbQuery('⏳ Реферальная программа скоро будет доступна!', { show_alert: true });
         }
@@ -417,6 +430,8 @@ export async function handleReferral(ctx) {
 // Обработчик пользовательской реферальной ссылки
 export async function handleRefUser(ctx) {
     try {
+        await ctx.answerCbQuery(); // Убираем индикатор загрузки
+        
         const userId = ctx.from.id;
         const botName = process.env.BOT_NAME || 'meemee_bot';
         const refLink = referralService.generateUserReferralLink(userId, botName);
@@ -441,6 +456,8 @@ export async function handleRefUser(ctx) {
 // Обработчик экспертной реферальной ссылки
 export async function handleRefExpert(ctx) {
     try {
+        await ctx.answerCbQuery(); // Убираем индикатор загрузки
+        
         const userId = ctx.from.id;
         const botName = process.env.BOT_NAME || 'meemee_bot';
         const refLink = referralService.generateExpertReferralLink(userId, botName);
@@ -480,6 +497,8 @@ export async function handlePayStarsSoon(ctx) {
 // Обработчик личного кабинета
 export async function handleProfile(ctx) {
     try {
+        await ctx.answerCbQuery(); // Убираем индикатор загрузки
+        
         const userId = ctx.from.id;
         const user = await userService.getUser(userId);
         const generations = await generationService.getUserGenerations(userId);
@@ -509,6 +528,8 @@ export async function handleProfile(ctx) {
 // Обработчик истории генераций
 export async function handleProfileHistory(ctx) {
     try {
+        await ctx.answerCbQuery(); // Убираем индикатор загрузки
+        
         const userId = ctx.from.id;
         const generations = await generationService.getUserGenerations(userId);
         
